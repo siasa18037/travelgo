@@ -1,0 +1,1 @@
+// # GET, POST /trip/:id_user/:id_trip/plan

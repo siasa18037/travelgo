@@ -1,0 +1,13 @@
+.custom-dark-hover {
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #000;
+  transition: all 0.3s ease;
+}
+
+.custom-dark-hover:hover {
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #000;
+}
+

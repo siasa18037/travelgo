@@ -1,0 +1,37 @@
+/* --- Fixed Top --- */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1030;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* ป้องกันเนื้อหาถูก Navbar บัง */
+body {
+  padding-top: 56px;
+}
+
+/* --- รูป Avatar --- */
+.navbar img {
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* --- Responsive: ซ่อนข้อความ span เมื่อหน้าจอเล็กกว่า 800px --- */
+@media (max-width: 800px) {
+  .navbar span{
+    display: none;
+  }
+
+  .navbar .nav-link {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .navbar .dropdown-menu {
+    font-size: 0.85rem;
+    min-width: 120px;
+  }
+}

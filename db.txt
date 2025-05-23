@@ -1,0 +1,168 @@
+[
+    {
+        _id:
+        name:'',
+        discription:
+        start_date:
+        end_date:
+        detail:
+        plan:[
+            {
+                _id:
+                status:(not_started,in_progress,completed,skipped,cancelled)
+                name:
+                start:วันที่เเละเวลา
+                end:วันที่เเละเวลา
+                type: (hotel,transport,eat,Activities)
+                data:{
+                    dataตรงนี้ขึ้นอยู่กับ "type"
+
+                    # hotel จะเป็น{
+                        name:
+                        name_hotel:
+                        start:วันที่เเละเวลา
+                        end:วันที่เเละเวลา
+                        location_name:
+                        location_detail:
+                        location: {
+                            lat:
+                            lng:
+                            address?:
+                        }
+                        hotel_booking_detail:
+                    }
+                    # transport จะเป็น{
+                        name:
+                        transport_type:(train,plan,bus,waking,taxi,car)
+                        transport_name:
+                        start:วันที่เเละเวลา
+                        end:วันที่เเละเวลา
+                        origin:{
+                            name:
+                            detail:
+                            "lat": 
+                            "lng": 
+                            "address":
+                        }
+                        destination:{
+                            name:
+                            detail:
+                            "lat": 
+                            "lng": 
+                            "address":
+                        }
+                        transport_booking_detail:
+                    }
+
+                    # eat จะเป็น{
+                        name:
+                        start:วันที่เเละเวลา
+                        end:วันที่เเละเวลา
+                        location_name:
+                        location_detail:
+                        location: {
+                            lat:
+                            lng:
+                            address?:
+                        }
+                        
+                    }
+
+                    # Activities จะเป็น{
+                        name:
+                        start:วันที่เเละเวลา
+                        end:วันที่เเละเวลา
+                        location_name:
+                        location_detail:
+                        location: {
+                            lat:
+                            lng:
+                            address?:
+                        }
+                        
+                    }
+                    
+
+
+                }
+                Tiket_pass:[id_Tiket_pass]
+                image:[]
+                detail:
+                amount:
+                Price_per_person: จำนวนคนต่อราคาamount เช่น 1
+                note:""
+                checklist:[
+                    {
+                        name:
+                        detail:
+                        status:(pending,done)
+                    }
+                ]
+                timestamps: true,
+                
+
+
+            }
+        ]
+        user:[
+            {
+                id_user:
+                type: (admin,user)
+            }
+        ]
+        Tiket_pass:[
+            {
+                _id
+                name:
+                detail:
+                booking_Tiket_pass:
+                price:
+                start:วันที่เเละเวลา
+                end:วันที่เเละเวลา
+                img:1รูป
+                location_use:
+                 timestamps: true,
+            },
+        ]
+        wellet_transaction:[
+            {
+                _id:
+                plan_id:
+                time:
+                amount:
+                from: user_id,           
+                to: user_id,        
+                isPaid: 
+                note: 
+                timestamps: true,
+            }
+        ]
+        timestamps: true,
+    }
+]
+
+
+endpoint api
+/api/trip/[id_user] (post) เพิ่ม trip
+/api/trip/[id_user] (get) ส่งlistของ trip ที่อยู่ userเข้าร่วม ส่งมาเเค่ [{id_trip,name,start_date,end_date,profile_image,user}]
+/api/trip/[id_user]
+/api/trip/[id_user]/[id_trip] (get) ส่งข้อมูลทิปนั้นตามidไปให้หมด (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip] (put) อัพเดตข้อมูล trip (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip] (delete) ลบ trip (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/plan (get) ส่งข้อมูลplanให้หมดของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/plan (post) เพิ่มplanของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/plan/[id_plan] (get) ส่งข้อมูลplanนั้นตามidไปให้หมด (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/plan/[id_plan] (put) อัพเดตข้อมูล plan (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/plan/[id_plan] (delete) plan (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/user (get) ส่งข้อมูลuserให้หมดของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/user (post) เพิ่มuserของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/user (put) อัพเดตข้อมูล user  (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/user (delete) ลบ user (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/ticket_pass (get) ส่งข้อมูลTiket_passให้หมดของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/ticket_pass (post) เพิ่มTiket_passของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/ticket_pass (put) อัพเดตข้อมูล Tiket_pass (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/ticket_pass (delete) ลบ Tiket_pass (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/wallet_transaction (get) ส่งข้อมูลwellet_transactionให้หมดของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/wallet_transaction (post) เพิ่มwellet_transactionของtripนั้น (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/wallet_transaction (put) อัพเดตข้อมูล wellet_transaction (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)
+/api/trip/[id_user]/[id_trip]/wallet_transaction (delete) ลบ wellet_transaction (เช็คid_userว่าอยู่ในtripมั้ยก่อนทำงาน)

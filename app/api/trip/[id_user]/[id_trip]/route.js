@@ -1,0 +1,1 @@
+// # GET, PUT, DELETE /trip/:id_user/:id_trip

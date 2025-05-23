@@ -1,0 +1,41 @@
+travelgo/
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   ├── login/route.js
+│   │   │   └── register/route.js
+│   │   └── user/
+│   │       
+│   ├── layout.jsx
+│   ├── page.jsx
+│   ├── login/
+│   │   └── page.jsx
+│   ├── register/
+│   │   └── page.jsx
+│   ├── dashboard/
+│   │   └── page.jsx
+│   └── middleware.js               # รวม middleware จาก /middleware
+│
+├── components/
+│   ├── Navbar.jsx
+│   └── ProtectedRoute.jsx         # ใช้ wrapper สำหรับหน้า private
+│
+├── lib/
+│   ├── db.js                      # MongoDB connect
+│   └── auth.js                    # JWT encode/decode
+│
+├── middleware/
+│   └── auth.js                    # JWT checker middleware
+│
+├── models/
+│   └── User.js                    # Mongoose model
+│
+├── public/
+│   └── ...
+│
+├── styles/
+│   └── globals.css
+│
+├── .env.local                     # SECRET, DB URI
+├── package.json
+└── next.config.js

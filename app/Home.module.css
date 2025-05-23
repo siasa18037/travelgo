@@ -1,0 +1,11 @@
+.mainBackground {
+    width: 100%;
+    display:  flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #6dd5fa, #2980b9);
+    color: white;
+    min-height: 100vh;
+}
+
+
