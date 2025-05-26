@@ -61,12 +61,12 @@ export default function DashboardPage() {
     const now = new Date();
     const start = new Date(startDateStr);
     const end = new Date(endDateStr);
+    console.log('start :' + start + 'end :' + end)
 
     if (now < start) return 'bg-warning-subtle text-warning-emphasis border border-warning';
     if (now >= start && now <= end) return 'bg-success-subtle text-success-emphasis border border-success';
     return 'bg-secondary-subtle text-secondary-emphasis border border-secondary';
   };
-
 
 
   return (

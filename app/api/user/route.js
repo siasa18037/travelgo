@@ -4,7 +4,7 @@ import User from '@/models/User';
 
 export async function GET() {
   await connectDB();
-  const users = await User.find({});
+  const users = await User.find({}).select('_id name email avatar type_user');
   return NextResponse.json(users);
 }
 

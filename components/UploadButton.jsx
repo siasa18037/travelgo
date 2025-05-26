@@ -51,11 +51,12 @@ export default function UploadButton({ onUploaded }) {
       <input
         type="file"
         accept="image/*"
-        className="form-control"
+        className="form-control input-outline-dark"
         onChange={handleFileChange}
         disabled={loading}
       />
       <button
+        type="button"
         className="btn btn-dark d-flex align-items-center justify-content-center"
         onClick={handleUpload}
         disabled={loading}

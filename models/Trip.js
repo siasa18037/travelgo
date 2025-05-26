@@ -125,7 +125,8 @@ const TripSchema = new Schema({
   ticket_pass: [TicketPassSchema],
   wallet_transaction: [WalletTransactionSchema],
   profile_image:{ type: String },
-  image: [{ type: String }]
+  image: [{ type: String }],
+  country :[{ type: String }],
 }, { timestamps: true });
 
 
