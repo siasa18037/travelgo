@@ -4,15 +4,17 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {  Map, FileText ,PlaneTakeoff ,PlaneLanding , Calendar,Clock} from 'lucide-react';
 import UploadButton from '@/components/UploadButton'; 
-import './create.css'
+import './edit.css'
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import CountryInput from "@/components/CountryInput";
 import Usertriplist from "@/components/Usertriplist"
 import { logoutUser } from "@/utils/logout";
-import { useRouter } from "next/navigation";
+import { useRouter , useParams} from "next/navigation";
+import Loading from '@/components/Loading';
+import Richtexteditor from '@/components/Richtexteditor'
 
 
-export default function CreateTrip() {
+export default function EditTrip() {
   const router = useRouter();
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState('10:00');
@@ -20,40 +22,52 @@ export default function CreateTrip() {
   const [endTime, setEndTime] = useState('18:00');
   const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-      fetch('/api/auth/check')
-        .then(res => res.json())
-        .then(data => {
-          if (data.ok) {
-            setUserId(data.user.userId);
-          } else {
-            logoutUser();
-          }
-        });
-    }, []);
-
+  const [loadingTrips, setLoadingTrips] = useState(true); // <-- เพิ่มตัวนี้
   const [form, setForm] = useState({
     name: '',
     description: '',
-    start_date: '',
-    end_date: '',
+    start_date: '', 
+    end_date: '', 
     detail: '',
     profile_image: '',
     country: [],
     user:[]
   });
+  const params = useParams();
+  const id_trip = params.id_trip;
 
   useEffect(() => {
-    if (userId) {
-      setForm((prev) => ({
-        ...prev,
-        user: [{ id_user: userId, type: 'admin' }]
-      }));
-    }
-  }, [userId]);
+    fetch('/api/auth/check')
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          setUserId(data.user.userId);
 
-  
+          fetch(`/api/trip/${data.user.userId}/${id_trip}`)
+            .then(res => res.json())
+            .then(trip => {
+              if (!trip.message) {
+                setForm(trip);
+
+                const start = new Date(trip.start_date);
+                const end = new Date(trip.end_date);
+
+                setStartDate(start);
+                setStartTime(start.toTimeString().slice(0, 5)); // "HH:MM"
+
+                setEndDate(end);
+                setEndTime(end.toTimeString().slice(0, 5));
+              } else {
+                router.push(`/dashboard`);
+                return
+              }
+              setLoadingTrips(false);
+            });
+        } else {
+          logoutUser();
+        }
+      });
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,7 +82,6 @@ export default function CreateTrip() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Combine date and time into Date objects
     const start = new Date(startDate);
     const [startHour, startMin] = startTime.split(':');
     start.setHours(startHour, startMin);
@@ -79,7 +92,6 @@ export default function CreateTrip() {
 
     const now = new Date();
 
-    // Validation
     if (start < now) {
       showErrorToast("Start time must be in the future.");
       setIsLoading(false);
@@ -92,13 +104,14 @@ export default function CreateTrip() {
       return;
     }
     try {
-      const response = await axios.post(`/api/trip/${userId}`, form);
-      const { id_trip } = response.data;
+      const response = await axios.put(`/api/trip/${userId}/${id_trip}`, form);
+      console.log(response.data)
+      setForm(response.data)
 
-      showSuccessToast("Trip created successfully!");
+      showSuccessToast("Trip update successfully!");
       router.push(`/trip/${id_trip}/edit`);
     } catch (error) {
-      console.error("Error creating trip:", error);
+      console.error("Error update trip:", error);
       showErrorToast("Failed to create trip.");
     } finally {
       setIsLoading(false);
@@ -126,15 +139,14 @@ export default function CreateTrip() {
         setEndTime(newTime);
       }
     }
-  }, [startDate, startTime]);
-
+  }, [startDate, startTime, endDate, endTime]);
 
   useEffect(() => {
     const formatDateTime = (date, time) => {
       const d = new Date(date);
       const [hours, minutes] = time.split(':');
       d.setHours(parseInt(hours), parseInt(minutes));
-      return d.toISOString().slice(0, 16); // returns "YYYY-MM-DDTHH:mm"
+      return d.toISOString().slice(0, 16); 
     };
     setForm((prev) => ({
       ...prev,
@@ -151,6 +163,8 @@ export default function CreateTrip() {
     setForm((prev) => ({ ...prev, user: list }));
   }
 
+  if (!userId || loadingTrips) return <Loading />;
+
   return (
     <main className="Createtrip">
       <form onSubmit={handleSubmit}>
@@ -158,11 +172,11 @@ export default function CreateTrip() {
         <div className="row gap-5 flex-column flex-md-row">
           {/* Left: Upload */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
-            <h2 className="mb-4">Create New Trip</h2>
+            <h2 className="mb-4">Edit Trip</h2>
             <div className="image-profile mb-3 w-100">
               
                 <img
-                  src={form.profile_image || 'https://www.fibe.in/_next/image/?url=https%3A%2F%2Faltcont.fibe.in%2Fwp-content%2Fuploads%2F2019%2F04%2FBudget-Travel.jpg&w=3840&q=75'  }
+                  src={form.profile_image}
                   alt="Profile"
                   className="img-fluid rounded shadow"
                 />
@@ -288,13 +302,11 @@ export default function CreateTrip() {
                 </div>
               </div>
 
-              
-
               {/* country */}
               <CountryInput value={form.country} onChange={handleSelectedCountries} />
 
               {/* User */}
-              <Usertriplist userId_host={userId} value={form.user} onChange={handleSelectedUsers}/>
+              <Usertriplist userId_host={form.user[0].id_user} value={form.user} onChange={handleSelectedUsers}/>
 
               {/* Description */}
               <div className="mb-3">
@@ -312,6 +324,21 @@ export default function CreateTrip() {
                 />
               </div>
 
+              {/* detail Rich Text Editor */}
+              <div className="mb-3">
+                <label className="form-label">
+                  <FileText size={18} className="me-1" /> Detail
+                </label>
+                <Richtexteditor
+                  value={form.detail}
+                  onChange={(value) => setForm(prev => ({ ...prev, detail: value }))}
+                />
+              </div>
+              
+              {/* หากต้องการแสดงผล HTML ที่ปลอดภัย */}
+              {/* <div className='Rich-Text-Editor' dangerouslySetInnerHTML={{ __html: form.detail }} /> */}
+
+
 
               {/* Submit Button */}
               <button
@@ -324,12 +351,13 @@ export default function CreateTrip() {
                     <div className="spinner-border spinner-border-sm me-2" role="status">
                       <span className="visually-hidden">Loading...</span>
                     </div>
-                    Creating...
+                    กำลังเเก้ไข...
                   </>
                 ) : (
-                  "Create Trip"
+                  "แก้ไขทิป"
                 )}
               </button>
+
             {/* </form> */}
           </div>
         </div>

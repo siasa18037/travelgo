@@ -3,7 +3,6 @@
 import Trip from '@/models/Trip';
 import { connectDB } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { Award } from 'lucide-react';
 
 export async function POST(req) {
   await connectDB();

@@ -1,0 +1,48 @@
+.ql-size-small {
+    font-size: 14px;
+}
+
+.ql-size-large {
+    font-size: 20px;
+}
+
+.ql-size-huge {
+    font-size: 30px;
+}
+
+.ql-align-center {
+    text-align: center;
+}
+
+.ql-align-right {
+    text-align: right;
+}
+
+.ql-indent-1 {
+    margin-left: 20px;
+}
+.ql-indent-2 {
+    margin-left: 40px;
+}
+.ql-indent-3 {
+    margin-left: 60px;
+}
+.ql-indent-4 {
+    margin-left: 80px;
+}
+.ql-indent-5 {
+    margin-left: 100px;
+}
+.ql-indent-6 {
+    margin-left: 120px;
+}
+.ql-indent-7 {
+    margin-left: 140px;
+}
+.ql-indent-8 {
+    margin-left: 160px;
+}
+
+.Rich-Text-Editor p{
+    margin-bottom: 2px;
+}
