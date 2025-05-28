@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import {  Map, FileText ,PlaneTakeoff ,PlaneLanding , Calendar,Clock} from 'lucide-react';
+import {  Map, FileText ,PlaneTakeoff ,PlaneLanding , Calendar,Clock ,Route ,Ticket,Wallet2} from 'lucide-react';
 import UploadButton from '@/components/UploadButton'; 
 import './edit.css'
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
@@ -12,6 +12,7 @@ import { logoutUser } from "@/utils/logout";
 import { useRouter , useParams} from "next/navigation";
 import Loading from '@/components/Loading';
 import Richtexteditor from '@/components/Richtexteditor'
+import Link from "next/link";
 
 
 export default function EditTrip() {
@@ -91,12 +92,6 @@ export default function EditTrip() {
     end.setHours(endHour, endMin);
 
     const now = new Date();
-
-    if (start < now) {
-      showErrorToast("Start time must be in the future.");
-      setIsLoading(false);
-      return;
-    }
 
     if (end <= start) {
       showErrorToast("End time must be after the start time.");
@@ -184,7 +179,7 @@ export default function EditTrip() {
             </div>
             <label className='pb-2'>Upload Image trip profile or Link</label>
             <UploadButton onUploaded={handleUploadComplete} />
-            <div className="mb-3">
+            <div className="mb-5">
                 <label htmlFor="profile_imagee" className="form-label">
                 </label>
                 <input
@@ -198,6 +193,74 @@ export default function EditTrip() {
                   required
                 />
             </div>
+
+            
+            {/* Plan */}
+            <div className="mb-3">
+              <h4 className="d-flex align-items-center mb-2">
+                <Route size={24} className="me-2" />
+                Plan
+              </h4>
+              <div className="d-flex gap-2">
+                <Link
+                  className="btn custom-dark-hover flex-fill d-flex align-items-center justify-content-center p-2"
+                  href={`/trip/${id_trip}/plan`}
+                >
+                  My plan
+                </Link>
+                <Link
+                  className="btn btn-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                  href={`/trip/${id_trip}/plan/edit`}
+                >
+                  Edit plan
+                </Link>
+              </div>
+            </div>
+
+            {/* Plan */}
+            <div className="mb-3">
+              <h4 className="d-flex align-items-center mb-2">
+                <Ticket size={24} className="me-2" />
+                Tiket
+              </h4>
+              <div className="d-flex gap-2">
+                <Link
+                  className="btn custom-dark-hover flex-fill d-flex align-items-center justify-content-center p-2"
+                  href={`/trip/${id_trip}/ticket`}
+                >
+                  My tiket
+                </Link>
+                <Link
+                  className="btn btn-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                  href={`/trip/${id_trip}/ticket/add`}
+                >
+                  Add tiket
+                </Link>
+              </div>
+            </div>
+
+            {/* Plan */}
+            <div>
+              <h4 className="d-flex align-items-center mb-2">
+                <Wallet2 size={24} className="me-2" />
+                Wallet
+              </h4>
+              <div className="d-flex gap-2">
+                <Link
+                  className="btn custom-dark-hover flex-fill d-flex align-items-center justify-content-center p-2"
+                  href={`/trip/${id_trip}/wallet`}
+                >
+                  My Wallet
+                </Link>
+                <Link
+                  className="btn btn-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                  href={`/trip/${id_trip}/ticket/add`}
+                >
+                  Summary 
+                </Link>
+              </div>
+            </div>
+            
           </div>
           
           {/* Right: Form */}
@@ -207,7 +270,7 @@ export default function EditTrip() {
 
               {/* Trip Name */}
               <div className="mb-3">
-                <label htmlFor="name" className="form-label">
+                <label htmlFor="name" className="form-label d-flex align-items-center">
                   <Map size={18} className="me-1" /> Trip Name
                 </label>
                 <input
@@ -223,7 +286,7 @@ export default function EditTrip() {
 
               {/* Start Date */}
               <div className="mb-3">
-                <label className="form-label">
+                <label className="form-label d-flex align-items-center">
                   <PlaneTakeoff size={18} className="me-1" /> Start Date
                 </label>
                 <div className="row g-2 align-items-center">
@@ -237,7 +300,6 @@ export default function EditTrip() {
                         className="form-control input-outline-dark "
                         value={startDate.toISOString().split('T')[0]}
                         onChange={(e) => setStartDate(new Date(e.target.value))}
-                        min={new Date().toISOString().split('T')[0]} 
                         required
                       />
                     </div>
@@ -260,7 +322,7 @@ export default function EditTrip() {
 
               {/* End Date */}
               <div className="mb-3">
-                <label className="form-label">
+                <label className="form-label d-flex align-items-center">
                   <PlaneLanding size={18} className="me-1" /> End Date
                 </label>
                 <div className="row g-2 align-items-center">
@@ -282,7 +344,7 @@ export default function EditTrip() {
                   </div>
                   <div className="col-md-6">
                     <div className="input-group">
-                      <span className="input-group-text div-outline-white">
+                      <span className="input-group-text div-outline-white ">
                         <Clock size={16} />
                       </span>
                       {/* End Time */}
@@ -310,7 +372,7 @@ export default function EditTrip() {
 
               {/* Description */}
               <div className="mb-3">
-                <label htmlFor="description" className="form-label">
+                <label htmlFor="description" className="form-label d-flex align-items-center">
                   <FileText size={18} className="me-1" /> Description
                 </label>
                 <input
@@ -326,7 +388,7 @@ export default function EditTrip() {
 
               {/* detail Rich Text Editor */}
               <div className="mb-3">
-                <label className="form-label">
+                <label className="form-label d-flex align-items-center">
                   <FileText size={18} className="me-1" /> Detail
                 </label>
                 <Richtexteditor
@@ -334,11 +396,11 @@ export default function EditTrip() {
                   onChange={(value) => setForm(prev => ({ ...prev, detail: value }))}
                 />
               </div>
-              
+
               {/* หากต้องการแสดงผล HTML ที่ปลอดภัย */}
               {/* <div className='Rich-Text-Editor' dangerouslySetInnerHTML={{ __html: form.detail }} /> */}
 
-
+              {/*  */}
 
               {/* Submit Button */}
               <button

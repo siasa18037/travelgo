@@ -64,7 +64,7 @@ export default function CountryInput({ value = [], onChange }) {
 
   return (
     <div className="CountryInput mb-2">
-      <label htmlFor="detail" className="form-label">
+      <label htmlFor="detail" className="form-label d-flex align-items-center">
         <Earth size={18} className="me-1" /> Country 
       </label>
       <div className="position-relative">

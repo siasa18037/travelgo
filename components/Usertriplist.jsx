@@ -61,7 +61,7 @@ export default function UserSelectList({ value = [], onChange, userId_host }) {
 
   return (
     <div className="position-relative mb-3">
-        <label htmlFor="description" className="form-label">
+        <label htmlFor="description" className="form-label d-flex align-items-center">
             <Users size={18} className="me-1" /> Member
         </label>
 
