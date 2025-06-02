@@ -3,7 +3,7 @@
 import { useTrip } from '@/components/TripContext';
 import { useState, useEffect ,useMemo } from 'react';
 import axios from 'axios';
-import { Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel} from 'lucide-react';
+import { Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,CircleArrowUp,CircleArrowDown,MoveRight} from 'lucide-react';
 import './edit.css'
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import { logoutUser } from "@/utils/logout";
@@ -13,7 +13,7 @@ import Richtexteditor from '@/components/Richtexteditor'
 import Link from "next/link";
 import MapMultiMarker from '@/components/MapMultiMarker';
 import { format, addDays, isBefore } from 'date-fns';
-import SearchMap from '@/components/SearchMap'
+import MapSearch from '@/components/MapSearch'
 
 export default function EditPlan() {
   const router = useRouter();
@@ -29,19 +29,25 @@ export default function EditPlan() {
 
   const locationList = [
     {
-      lat: 13.7563,
-      lng: 100.5018,
-      address: "กรุงเทพมหานคร",
-      location_name: "วัดพระแก้ว"
+      lat: 17.4042207,
+      lng: 102.8053644,
+      address: "ซอยแสงภากรณ์, 10520, Lat Krabang, Bangkok, Thailand",
+      location_name: "ซอยแสงภากรณ์"
     },
     {
-      lat: 13.7367,
-      lng: 100.5231,
+      lat: 17.387112,
+      lng: 102.7755279,
       address: "กรุงเทพมหานคร",
       location_name: "วัดอรุณ"
     },
     
   ];
+
+  const handleLocation = (location) => {
+    console.log("ตำแหน่งที่ได้รับ:", location);
+    // location = { name, lat, lng, address }
+    // คุณสามารถบันทึก state ได้ตรงนี้
+  };
 
   // formatThaiDate
   const formatThaiDate = (dateStr) => {
@@ -148,10 +154,10 @@ export default function EditPlan() {
             </div>
           </div>
 
-          {/* main section */}
+          {/* main section 1*/}
           <div className="main-section mb-3">
-            <div className="card ">
-              <div className="card-header">
+            <div className="card">
+              <div className="card-header bg-body-secondary">
                 <div className="titel d-flex align-items-center mb-2">
                   <h2 className='mb-0 me-2'>1</h2>
                   <input 
@@ -164,83 +170,276 @@ export default function EditPlan() {
                     }}
                   />
                 </div>
-                <div className="input">
-                  <div className="btn-group btn-group-toggle mb-2" data-toggle="buttons">
-                    <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black ">
-                      <input
-                        type="radio"
-                        name="options"
-                        id="option1"
-                        autoComplete="off"
-                        defaultChecked
-                        style={{ display: 'none' }}
-                        value='Activities'
-                      />
-                      <Compass className='me-2' size={18}/>
-                      Activities
-                    </label>
-                    <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                      <input
-                        type="radio"
-                        name="options"
-                        id="option2"
-                        autoComplete="off"
-                        style={{ display: 'none' }}
-                        value='eat'
-                      />
-                      <Hamburger className='me-2' size={18}/>
-                      Eat
-                    </label>
-                    <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                      <input
-                        type="radio"
-                        name="options"
-                        id="option3"
-                        autoComplete="off"
-                        style={{ display: 'none' }}
-                        value='hotel'
-                      />
-                      <Hotel className='me-2' size={18}/>
-                      Hotel
-                    </label>
+                <div className="row gx-3 gy-2 align-items-center">
+                  <div className="col-md-auto">
+                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          defaultChecked
+                          style={{ display: 'none' }}
+                          value="Activities"
+                        />
+                        <Compass className="me-2" size={18} />
+                        Activities
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="eat"
+                        />
+                        <Hamburger className="me-2" size={18} />
+                        Eat
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="hotel"
+                        />
+                        <Hotel className="me-2" size={18} />
+                        Hotel
+                      </label>
+                    </div>
                   </div>
-                  <div className="input-datetime row ">
-                    <div className="col-md-6 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                      <span className="">Start</span>
-                      <select className="form-select border-secondary flex-fill">
-                        {options.map((date, index) => (
-                          <option key={index}>{date}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="time"
-                        className="form-control border-secondary flex-fill"
-                      />
-                    </div>
-                    <div className="col-md-6 d-flex flex-column flex-md-row align-items-md-center gap-2">
-                      <span className="">End</span>
-                      <select className="form-select border-secondary flex-fill">
-                        {options.map((date, index) => (
-                          <option key={index}>{date}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="time"
-                        className="form-control border-secondary flex-fill"
-                      />
-                    </div>
+
+                  {/* ส่วนเลือกเวลา */}
+                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
+                    <span >Start</span>
+                    <select className="form-select border-secondary flex-fill">
+                      {options.map((date, index) => (
+                        <option key={index}>{date}</option>
+                      ))}
+                    </select>
+                    <input type="time" className="form-control border-secondary flex-fill" />
                   </div>
                 </div>
+
               </div>
-              <div className="card-body">
-                <SearchMap/>
+              <div className="card-body bg-body-secondary">
+                  <MapSearch SelectLocation={handleLocation} />
+              </div>
+              <div className="card-header d-flex align-items-center justify-content-between border-0 bg-body-secondary">
+                <div className="status">
+                  {/* ว่างไว้ */}
+                </div>
+                <div className="left d-flex align-items-center gap-2">
+                  <Link className="btn d-flex align-items-center btn-outline-dark" href={`/trip/${id_trip}/plan/map`}>
+                    ดูตำเเหน่ง
+                  </Link>
+                  <button className="btn d-flex align-items-center btn-outline-dark" >
+                    ตั้งค่าเพิ่มเติม
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           {/* transport section */}
-          {/* <div class="transport-section mb-3">
-          </div> */}
+          <div className="transport-section mb-3 ">
+            <div className="card ">
+              <div className="card-header bg-info-subtle">
+                <div className="row gx-3 gy-2 align-items-center">
+                  <div className="col-md-auto">
+                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          defaultChecked
+                          style={{ display: 'none' }}
+                          value="public_transport"
+                        />
+                        <Bus size={18} />
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="car"
+                        />
+                        <CarFront size={18} />
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="plane"
+                        />
+                        <Plane size={18} />
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="train"
+                        />
+                        <TrainFront size={18} />
+          
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="walking"
+                        />
+                        <Footprints size={18} />
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="bicycle"
+                        />
+                        <Bike size={18} />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* ส่วนเลือกเวลา */}
+                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
+                    <span >Start</span>
+                    <select className="form-select border-secondary flex-fill">
+                      {options.map((date, index) => (
+                        <option key={index}>{date}</option>
+                      ))}
+                    </select>
+                    <input type="time" className="form-control border-secondary flex-fill" />
+                  </div>
+                </div>
+
+              </div>
+              <div className="card-body border-0 bg-info-subtle">
+                <div className="row align-items-center gx-3 gy-2">
+                  {/* Route Information */}
+                  <div className="col-12 col-md d-flex align-items-center flex-wrap">
+                    <p className="mb-0">พิพิธภัณฑสถานแห่งชาติโตเกียว</p>
+                    <MoveRight className="mx-3" size={25} />
+                    <p className="mb-0">ศาลเจ้าฮาคุซัน</p>
+                  </div>
+                  {/* Buttons */}
+                  <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
+                    <Link
+                      className="btn d-flex align-items-center btn-outline-dark"
+                      href={`/trip/${id_trip}/plan/map`}
+                    >
+                      ดูเส้นทาง
+                    </Link>
+                    <button className="btn d-flex align-items-center btn-outline-dark">
+                      ตั้งค่าเพิ่มเติม
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* main section 2*/}
+          <div className="main-section mb-3">
+            <div className="card">
+              <div className="card-header bg-body-secondary">
+                <div className="titel d-flex align-items-center mb-2">
+                  <h2 className='mb-0 me-2'>2</h2>
+                  <input 
+                    type="text" 
+                    className="form-control border-0 border-bottom rounded-0 shadow-none fs-3" 
+                    placeholder="ตั้งชื่อ" 
+                    name="name"
+                    style={{
+                      background: 'transparent',
+                    }}
+                  />
+                </div>
+                <div className="row gx-3 gy-2 align-items-center">
+                  <div className="col-md-auto">
+                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          defaultChecked
+                          style={{ display: 'none' }}
+                          value="Activities"
+                        />
+                        <Compass className="me-2" size={18} />
+                        Activities
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="eat"
+                        />
+                        <Hamburger className="me-2" size={18} />
+                        Eat
+                      </label>
+                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
+                        <input
+                          type="radio"
+                          name="options"
+                          autoComplete="off"
+                          style={{ display: 'none' }}
+                          value="hotel"
+                        />
+                        <Hotel className="me-2" size={18} />
+                        Hotel
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* ส่วนเลือกเวลา */}
+                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
+                    <span >Start</span>
+                    <select className="form-select border-secondary flex-fill">
+                      {options.map((date, index) => (
+                        <option key={index}>{date}</option>
+                      ))}
+                    </select>
+                    <input type="time" className="form-control border-secondary flex-fill" />
+                  </div>
+                </div>
+
+              </div>
+              <div className="card-body bg-body-secondary">
+                  <MapSearch SelectLocation={handleLocation} />
+              </div>
+              <div className="card-header d-flex align-items-center justify-content-between border-0 bg-body-secondary">
+                <div className="status">
+                  {/* ว่างไว้ */}
+                </div>
+                <div className="left d-flex align-items-center gap-2">
+                  <Link className="btn d-flex align-items-center btn-outline-dark" href={`/trip/${id_trip}/plan/map`}>
+                    ดูตำเเหน่ง
+                  </Link>
+                  <button className="btn d-flex align-items-center btn-outline-dark" >
+                    ตั้งค่าเพิ่มเติม
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* end box*/}
           <div className="card mb-3">
@@ -265,4 +464,4 @@ export default function EditPlan() {
 
     </main>
   );
-}
+} 
