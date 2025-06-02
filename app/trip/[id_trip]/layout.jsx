@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Loading from '@/components/Loading';
 import { TripProvider } from '@/components/TripContext';
 
+
 export default function TripLayout({ children }) {
   const router = useRouter();
   const params = useParams();
@@ -14,6 +15,7 @@ export default function TripLayout({ children }) {
   const [authorized, setAuthorized] = useState(false);
   const [userType, setUserType] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [nameTrip, setNameTrip] = useState(null);
 
   useEffect(() => {
     fetch('/api/auth/check')
@@ -29,6 +31,7 @@ export default function TripLayout({ children }) {
             .then(tripData => {
               if (tripData.ok) {
                 setUserType(tripData.type);
+                setNameTrip(tripData.name_trip)
                 setAuthorized(true);
               } else {
                 router.push('/dashboard'); 
@@ -58,7 +61,7 @@ export default function TripLayout({ children }) {
   }
 
   return (
-    <TripProvider value={{ userType, userId, id_trip }}>
+    <TripProvider value={{ userType, userId, id_trip , nameTrip}}>
       {children}
     </TripProvider>
   );

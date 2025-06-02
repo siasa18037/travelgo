@@ -21,6 +21,7 @@ export async function GET(req, { params }) {
   return NextResponse.json({
     ok: true,
     type: user.type,
+    name_trip : trip.name,
     status: 200
   });
 }

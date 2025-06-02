@@ -30,7 +30,7 @@ const TransportDataSchema = new Schema({
   name: String,
   transport_type: {
     type: String,
-    enum: ['train', 'plane', 'bus', 'walking', 'taxi', 'car']
+    enum: ['public_transport','car', 'plane', 'train', 'walking', 'bicycle']
   },
   transport_name: String,
   start: Date,

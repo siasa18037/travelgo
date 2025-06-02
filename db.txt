@@ -33,7 +33,7 @@
                     }
                     # transport จะเป็น{
                         name:
-                        transport_type:(train,plan,bus,waking,taxi,car)
+                        transport_type:('public_transport','car', 'plane', 'train', 'walking', 'bicycle')
                         transport_name:
                         start:วันที่เเละเวลา
                         end:วันที่เเละเวลา
@@ -53,7 +53,6 @@
                         }
                         transport_booking_detail:
                     }
-
                     # eat จะเป็น{
                         name:
                         start:วันที่เเละเวลา
@@ -64,10 +63,8 @@
                             lat:
                             lng:
                             address?:
-                        }
-                        
+                        }                   
                     }
-
                     # Activities จะเป็น{
                         name:
                         start:วันที่เเละเวลา
@@ -78,12 +75,8 @@
                             lat:
                             lng:
                             address?:
-                        }
-                        
+                        } 
                     }
-                    
-
-
                 }
                 Tiket_pass:[id_Tiket_pass]
                 image:[]
@@ -99,9 +92,6 @@
                     }
                 ]
                 timestamps: true,
-                
-
-
             }
         ]
         user:[

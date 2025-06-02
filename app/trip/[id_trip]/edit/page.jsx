@@ -100,7 +100,6 @@ export default function EditTrip() {
     }
     try {
       const response = await axios.put(`/api/trip/${userId}/${id_trip}`, form);
-      console.log(response.data)
       setForm(response.data)
 
       showSuccessToast("Trip update successfully!");
@@ -262,7 +261,6 @@ export default function EditTrip() {
             </div>
             
           </div>
-          
           {/* Right: Form */}
           <div className="col">
             {/* <form onSubmit={handleSubmit}> */}
