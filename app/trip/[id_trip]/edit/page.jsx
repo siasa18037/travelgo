@@ -13,6 +13,8 @@ import { useRouter , useParams} from "next/navigation";
 import Loading from '@/components/Loading';
 import Richtexteditor from '@/components/Richtexteditor'
 import Link from "next/link";
+import { timezones } from '@/lib/timezone';
+import { utcToZonedTime, format } from 'date-fns-tz'
 
 
 export default function EditTrip() {
@@ -34,6 +36,8 @@ export default function EditTrip() {
     country: [],
     user:[]
   });
+  const [startTimezone, setStartTimezone] = useState('Asia/Bangkok');
+  const [endTimezone, setEndTimezone] = useState('Asia/Bangkok');
   const params = useParams();
   const id_trip = params.id_trip;
 
@@ -50,8 +54,11 @@ export default function EditTrip() {
               if (!trip.message) {
                 setForm(trip);
 
-                const start = new Date(trip.start_date);
-                const end = new Date(trip.end_date);
+                const start = new Date(trip.start_date?.datetime || trip.start_date);
+                const end = new Date(trip.end_date?.datetime || trip.end_date);
+                setStartTimezone(trip.start_date?.timezone || 'Asia/Bangkok');
+                setEndTimezone(trip.end_date?.timezone || 'Asia/Bangkok');
+
 
                 setStartDate(start);
                 setStartTime(start.toTimeString().slice(0, 5)); // "HH:MM"
@@ -135,19 +142,30 @@ export default function EditTrip() {
     }
   }, [startDate, startTime, endDate, endTime]);
 
-  useEffect(() => {
-    const formatDateTime = (date, time) => {
-      const d = new Date(date);
-      const [hours, minutes] = time.split(':');
-      d.setHours(parseInt(hours), parseInt(minutes));
-      return d.toISOString().slice(0, 16); 
+ const formatDateTimeWithZone = (date, time, timezone) => {
+    const datePart = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    const dateTimeLocal = new Date(`${datePart}T${time}:00`);
+
+    // step: convert to timezone string → UTC
+    const localISO = format(dateTimeLocal, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone: timezone });
+    const utcDate = new Date(localISO); // ISO string ที่แปลง timezone แล้ว
+
+    return {
+      datetime: utcDate.toISOString(),
+      timezone
     };
+  };
+
+  useEffect(() => {
+    const newStart = formatDateTimeWithZone(startDate, startTime, startTimezone);
+    const newEnd = formatDateTimeWithZone(endDate, endTime, endTimezone);
+
     setForm((prev) => ({
       ...prev,
-      start_date: formatDateTime(startDate, startTime),
-      end_date: formatDateTime(endDate, endTime),
+      start_date: newStart,
+      end_date: newEnd
     }));
-  }, [startDate, startTime, endDate, endTime]);
+  }, [startDate, startTime, endDate, endTime, startTimezone, endTimezone]);
 
   const handleSelectedCountries = (list) => {
     setForm((prev) => ({ ...prev, country: list }));
@@ -313,6 +331,15 @@ export default function EditTrip() {
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
                       />
+                      <select
+                      className="form-select input-outline-dark"
+                      value={startTimezone}
+                      onChange={(e) => setStartTimezone(e.target.value)}
+                    >
+                      {timezones.map(tz => (
+                        <option key={tz[1]} value={tz[1]}>{tz[0]} - {tz[1]}</option>
+                      ))}
+                    </select>
                     </div>
                   </div>
                 </div>
@@ -342,7 +369,7 @@ export default function EditTrip() {
                   </div>
                   <div className="col-md-6">
                     <div className="input-group">
-                      <span className="input-group-text div-outline-white ">
+                      <span className="input-group-text div-outline-white">
                         <Clock size={16} />
                       </span>
                       {/* End Time */}
@@ -351,12 +378,16 @@ export default function EditTrip() {
                         className="form-control input-outline-dark"
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
-                        min={
-                          endDate.toDateString() === startDate.toDateString()
-                            ? startTime
-                            : undefined
-                        }
                       />
+                      <select
+                        className="form-select input-outline-dark"
+                        value={endTimezone}
+                        onChange={(e) => setEndTimezone(e.target.value)}
+                      >
+                        {timezones.map(tz => (
+                          <option key={tz[1]} value={tz[1]}>{tz[0]} - {tz[1]}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>

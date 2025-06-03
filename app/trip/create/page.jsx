@@ -10,6 +10,10 @@ import CountryInput from "@/components/CountryInput";
 import Usertriplist from "@/components/Usertriplist"
 import { logoutUser } from "@/utils/logout";
 import { useRouter } from "next/navigation";
+import { timezones } from '@/lib/timezone';
+import { utcToZonedTime, format } from 'date-fns-tz'
+
+
 
 
 export default function CreateTrip() {
@@ -20,6 +24,10 @@ export default function CreateTrip() {
   const [endTime, setEndTime] = useState('18:00');
   const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [startTimezone, setStartTimezone] = useState('Asia/Bangkok');
+  const [endTimezone, setEndTimezone] = useState('Asia/Bangkok');
+
+
 
   useEffect(() => {
       fetch('/api/auth/check')
@@ -53,7 +61,31 @@ export default function CreateTrip() {
     }
   }, [userId]);
 
-  
+  const formatDateTimeWithZone = (date, time, timezone) => {
+    const datePart = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    const dateTimeLocal = new Date(`${datePart}T${time}:00`);
+
+    // step: convert to timezone string → UTC
+    const localISO = format(dateTimeLocal, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone: timezone });
+    const utcDate = new Date(localISO); // ISO string ที่แปลง timezone แล้ว
+
+    return {
+      datetime: utcDate.toISOString(),
+      timezone
+    };
+  };
+
+  useEffect(() => {
+    const newStart = formatDateTimeWithZone(startDate, startTime, startTimezone);
+    const newEnd = formatDateTimeWithZone(endDate, endTime, endTimezone);
+
+    setForm((prev) => ({
+      ...prev,
+      start_date: newStart,
+      end_date: newEnd
+    }));
+  }, [startDate, startTime, endDate, endTime, startTimezone, endTimezone]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,30 +100,27 @@ export default function CreateTrip() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Combine date and time into Date objects
-    const start = new Date(startDate);
-    const [startHour, startMin] = startTime.split(':');
-    start.setHours(startHour, startMin);
-
-    const end = new Date(endDate);
-    const [endHour, endMin] = endTime.split(':');
-    end.setHours(endHour, endMin);
-
-    const now = new Date();
-
-    // Validation
-    if (start < now) {
-      showErrorToast("Start time must be in the future.");
-      setIsLoading(false);
-      return;
-    }
-
-    if (end <= start) {
-      showErrorToast("End time must be after the start time.");
-      setIsLoading(false);
-      return;
-    }
     try {
+      // ดึง datetime จริงที่ถูกแปลงแล้วจาก form (เป็น UTC ISO string)
+      const start = new Date(form.start_date?.datetime);
+      const end = new Date(form.end_date?.datetime);
+      const now = new Date();
+
+      // Validation: เวลาเริ่มต้องมากกว่าปัจจุบัน
+      if (start < now) {
+        showErrorToast("Start time must be in the future.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Validation: เวลาเริ่มต้องมาก่อนเวลาสิ้นสุด
+      if (end <= start) {
+        showErrorToast("End time must be after the start time.");
+        setIsLoading(false);
+        return;
+      }
+
+      // ส่ง form ไปยัง backend
       const response = await axios.post(`/api/trip/${userId}`, form);
       const { id_trip } = response.data;
 
@@ -103,8 +132,8 @@ export default function CreateTrip() {
     } finally {
       setIsLoading(false);
     }
-
   };
+
 
   useEffect(() => {
     // ปรับ endDate ให้ไม่น้อยกว่า startDate
@@ -129,19 +158,6 @@ export default function CreateTrip() {
   }, [startDate, startTime]);
 
 
-  useEffect(() => {
-    const formatDateTime = (date, time) => {
-      const d = new Date(date);
-      const [hours, minutes] = time.split(':');
-      d.setHours(parseInt(hours), parseInt(minutes));
-      return d.toISOString().slice(0, 16); // returns "YYYY-MM-DDTHH:mm"
-    };
-    setForm((prev) => ({
-      ...prev,
-      start_date: formatDateTime(startDate, startTime),
-      end_date: formatDateTime(endDate, endTime),
-    }));
-  }, [startDate, startTime, endDate, endTime]);
 
   const handleSelectedCountries = (list) => {
     setForm((prev) => ({ ...prev, country: list }));
@@ -239,6 +255,15 @@ export default function CreateTrip() {
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
                       />
+                      <select
+                      className="form-select input-outline-dark"
+                      value={startTimezone}
+                      onChange={(e) => setStartTimezone(e.target.value)}
+                    >
+                      {timezones.map(tz => (
+                        <option key={tz[1]} value={tz[1]}>{tz[0]} - {tz[1]}</option>
+                      ))}
+                    </select>
                     </div>
                   </div>
                 </div>
@@ -277,12 +302,16 @@ export default function CreateTrip() {
                         className="form-control input-outline-dark"
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
-                        min={
-                          endDate.toDateString() === startDate.toDateString()
-                            ? startTime
-                            : undefined
-                        }
                       />
+                      <select
+                        className="form-select input-outline-dark"
+                        value={endTimezone}
+                        onChange={(e) => setEndTimezone(e.target.value)}
+                      >
+                        {timezones.map(tz => (
+                          <option key={tz[1]} value={tz[1]}>{tz[0]} - {tz[1]}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>

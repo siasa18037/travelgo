@@ -38,8 +38,8 @@ export default function DashboardPage() {
 
   if (!user || loadingTrips) return <Loading />;
 
-  const formatThaiDate = (dateStr) => {
-    const date = new Date(dateStr);
+  const formatThaiDate = (dateObj) => {
+    const date = new Date(dateObj?.datetime);
     return date.toLocaleDateString('th-TH', {
       year: 'numeric',
       month: 'long',
@@ -47,26 +47,27 @@ export default function DashboardPage() {
     });
   };
 
-  const getTripStatusMessage = (startDateStr, endDateStr) => {
+
+  const getTripStatusMessage = (startDateObj, endDateObj) => {
     const now = new Date();
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
+    const start = new Date(startDateObj?.datetime);
+    const end = new Date(endDateObj?.datetime);
 
     if (now < start) return "เร็วๆ นี้";
     if (now >= start && now <= end) return "กำลังเดินทาง";
     return "จบแล้ว";
   };
 
-  const getTripStatusStyle = (startDateStr, endDateStr) => {
+  const getTripStatusStyle = (startDateObj, endDateObj) => {
     const now = new Date();
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
-    console.log('start :' + start + 'end :' + end)
+    const start = new Date(startDateObj?.datetime);
+    const end = new Date(endDateObj?.datetime);
 
     if (now < start) return 'bg-warning-subtle text-warning-emphasis border border-warning';
     if (now >= start && now <= end) return 'bg-success-subtle text-success-emphasis border border-success';
     return 'bg-secondary-subtle text-secondary-emphasis border border-secondary';
   };
+
 
 
   return (
