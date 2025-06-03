@@ -3,13 +3,11 @@
 import { useTrip } from '@/components/TripContext';
 import { useState, useEffect ,useMemo } from 'react';
 import axios from 'axios';
-import { Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,CircleArrowUp,CircleArrowDown,MoveRight} from 'lucide-react';
+import { Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,CircleArrowUp,CircleArrowDown,MoveRight ,Plus} from 'lucide-react';
 import './edit.css'
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
-import { logoutUser } from "@/utils/logout";
 import { useRouter , useParams} from "next/navigation";
 import Loading from '@/components/Loading';
-import Richtexteditor from '@/components/Richtexteditor'
 import Link from "next/link";
 import MapMultiMarker from '@/components/MapMultiMarker';
 import { format, addDays, isBefore } from 'date-fns';
@@ -19,29 +17,24 @@ export default function EditPlan() {
   const router = useRouter();
   const { userType, userId, id_trip } = useTrip();
   const [loadingTrips, setLoadingTrips] = useState(true);
-  const [plan, setPlan] = useState();
+  const [plan, setPlan] = useState([]);
   const [trip, setTrip] = useState({
     name: '',
     start_date: '', 
     end_date: '', 
     country: [],
   });
+  let mainIndex = 0;
 
-  const locationList = [
-    {
-      lat: 17.4042207,
-      lng: 102.8053644,
-      address: "ซอยแสงภากรณ์, 10520, Lat Krabang, Bangkok, Thailand",
-      location_name: "ซอยแสงภากรณ์"
-    },
-    {
-      lat: 17.387112,
-      lng: 102.7755279,
-      address: "กรุงเทพมหานคร",
-      location_name: "วัดอรุณ"
-    },
-    
-  ];
+  const locationList = [];
+
+  const currentLocation = {
+    name: "",
+    lat: 13.7563,
+    lng: 100.5018,
+    address: ""
+  }
+
 
   const handleLocation = (location) => {
     console.log("ตำแหน่งที่ได้รับ:", location);
@@ -115,6 +108,62 @@ export default function EditPlan() {
       });
   }, []);
 
+  const addMainSection = () => {
+    const isFirst = plan.length === 0;
+    setPlan((prev) => [
+      ...prev,
+      {
+        type: 'Activities',
+        name: '',
+        start: isFirst ? trip.start_date : '',
+        end: '',
+        data: {
+          location: {
+            name: '',
+            lat: '',
+            lng: '',
+            address: ''
+          }
+        }
+      }
+    ]);
+  };
+
+  
+
+  const addTransportSection = () => {
+    if (plan.length == 0){
+      showErrorToast("กรุณาเพิ่มสถานที่หรือกิจกรรมเริ่มต้น");
+      return;
+    }
+    const lastItem = plan[plan.length - 1];
+    if (lastItem?.type === 'transport') {
+      showErrorToast("ไม่สามารถเพิ่มการเดินทางซ้ำติดกันได้");
+      return;
+    }
+    setPlan((prev) => [...prev, { 
+      type: 'transport',
+      name:'',
+      transport_type : 'public_transport',
+      start : '',
+      end: '',
+      origin: {
+          name: '',
+          lat: '',
+          lng: '',
+          address: ''
+        },
+      destination: {
+          name: '',
+          lat: '',
+          lng: '',
+          address: ''
+        },
+     }]);
+  };
+
+
+  console.log(plan)
 
   if (!userId || loadingTrips) return <Loading />;
 
@@ -154,292 +203,395 @@ export default function EditPlan() {
             </div>
           </div>
 
-          {/* main section 1*/}
-          <div className="main-section mb-3">
-            <div className="card">
-              <div className="card-header bg-body-secondary">
-                <div className="titel d-flex align-items-center mb-2">
-                  <h2 className='mb-0 me-2'>1</h2>
-                  <input 
-                    type="text" 
-                    className="form-control border-0 border-bottom rounded-0 shadow-none fs-3" 
-                    placeholder="ตั้งชื่อ" 
-                    name="name"
-                    style={{
-                      background: 'transparent',
-                    }}
-                  />
+          {/* main plan */}
+          {plan.map((item, index) => (
+            <div key={index}>
+            {(() => {
+              if (item.type !== 'transport') {
+                mainIndex++;
+                return (
+              // main-section
+              <div className="main-section mb-3">
+                <div className="card">
+                  <div className="card-header bg-body-secondary">
+                    <div className="titel d-flex align-items-center mb-2">
+                      <h2 className='mb-0 me-2'>{mainIndex}</h2>
+                      <input 
+                        type="text" 
+                        className="form-control border-0 border-bottom rounded-0 shadow-none fs-3" 
+                        placeholder="ตั้งชื่อ" 
+                        name="name"
+                        // value={item.name}
+                        style={{
+                          background: 'transparent',
+                        }}
+                      />
+                    </div>
+                    <div className="row gx-3 gy-2 align-items-center">
+                      <div className="col-md-auto">
+                        <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.type === "Activities" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="Activities"
+                              checked={item.type === "Activities"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].type = "Activities";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Compass className="me-2" size={18} />
+                            Activities
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.type === "eat" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="Activities"
+                              checked={item.type === "eat"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].type = "eat";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Hamburger className="me-2" size={18} />
+                            Eat
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.type === "hotel" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="Activities"
+                              checked={item.type === "hotel"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].type = "hotel";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Hotel className="me-2" size={18} />
+                            Hotel
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* ส่วนเลือกเวลา */}
+                      <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
+                        <span >Start</span>
+                        <select
+                          className="form-select border-secondary flex-fill"
+                          value={
+                            index === 0
+                              ? format(new Date(trip.start_date), 'dd/MM/yyyy')
+                              : item.start
+                                ? format(new Date(item.start), 'dd/MM/yyyy')
+                                : ''
+                          }
+                          disabled={index === 0} // ❌ ห้ามแก้ไขตัวแรก
+                          onChange={(e) => {
+                            if (index === 0) return; // กันเผลอเปลี่ยน
+                            const selectedDate = e.target.value;
+                            const newPlan = [...plan];
+                            const currentStart = newPlan[index].start
+                              ? new Date(newPlan[index].start)
+                              : new Date(options[0].split('/').reverse().join('-'));
+                            newPlan[index].start = new Date(
+                              `${selectedDate.split('/').reverse().join('-')}T${format(currentStart, 'HH:mm')}`
+                            ).toISOString();
+                            setPlan(newPlan);
+                          }}
+                        >
+                          {options
+                            .filter(dateStr => {
+                              if (index === 0) return true;
+                              const prevItem = plan[index - 1];
+                              if (!prevItem || !prevItem.start) return true;
+                              const prevDate = new Date(prevItem.end || prevItem.start);
+                              const currentDate = new Date(dateStr.split('/').reverse().join('-'));
+                              return currentDate >= new Date(prevDate.toDateString());
+                            })
+                            .map((date, idx) => (
+                              <option key={idx}>{date}</option>
+                            ))}
+                        </select>
+                        <input
+                          type="time"
+                          className="form-control border-secondary flex-fill"
+                          value={
+                            index === 0
+                              ? format(new Date(trip.start_date), 'HH:mm')
+                              : item.start
+                                ? format(new Date(item.start), 'HH:mm')
+                                : ''
+                          }
+                          disabled={index === 0} // ❌ ห้ามแก้ไขตัวแรก
+                          onChange={(e) => {
+                            if (index === 0) return;
+                            const selectedTime = e.target.value;
+                            const newPlan = [...plan];
+                            const currentStart = newPlan[index].start
+                              ? new Date(newPlan[index].start)
+                              : new Date(options[0].split('/').reverse().join('-'));
+
+                            const dateStr = format(currentStart, 'yyyy-MM-dd');
+                            newPlan[index].start = new Date(`${dateStr}T${selectedTime}`).toISOString();
+
+                            if (index > 0) {
+                              const prevEnd = new Date(plan[index - 1].end || plan[index - 1].start);
+                              const current = new Date(newPlan[index].start);
+                              if (current <= prevEnd) {
+                                showErrorToast("เวลาต้องมากกว่ารายการก่อนหน้า");
+                                return;
+                              }
+                            }
+
+                            setPlan(newPlan);
+                          }}
+                        />
+
+                      </div>
+                    </div>
+
+                  </div>
+                  <div className="card-body bg-body-secondary">
+                      <MapSearch SelectLocation={handleLocation} value={item.data.location} />
+                  </div>
+                  <div className="card-header d-flex align-items-center justify-content-between border-0 bg-body-secondary">
+                    <div className="status">
+                      {/* ว่างไว้ */}
+                    </div>
+                    <div className="left d-flex align-items-center gap-2">
+                      <Link className="btn d-flex align-items-center btn-outline-dark" href={`/trip/${id_trip}/plan/map`}>
+                        ดูตำเเหน่ง
+                      </Link>
+                      <button className="btn d-flex align-items-center btn-outline-dark" >
+                        ตั้งค่าเพิ่มเติม
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="row gx-3 gy-2 align-items-center">
-                  <div className="col-md-auto">
-                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black">
+              </div>
+              );
+              } else {
+                return (
+              // transport-section
+              <div className="transport-section mb-3 ">
+                <div className="card ">
+                  <div className="card-header bg-info-subtle">
+                    <div className="row gx-3 gy-2 align-items-center">
+                      <div className="col-md-auto">
+                        <div className="btn-group btn-group-toggle" data-toggle="buttons">
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "public_transport" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="public_transport"
+                              checked={item.transport_type === "public_transport"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].transport_type = "public_transport";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Bus size={18} />
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "car" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="public_transport"
+                              checked={item.transport_type === "car"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].transport_type = "car";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <CarFront size={18} />
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "plane" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="public_transport"
+                              checked={item.transport_type === "plane"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].transport_type = "plane";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Plane size={18} />
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "train" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="public_transport"
+                              checked={item.transport_type === "train"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].transport_type = "train";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <TrainFront size={18} />
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "walking" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="public_transport"
+                              checked={item.transport_type === "walking"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].transport_type = "walking";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Footprints size={18} />
+                          </label>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "bicycle" ? 'active bg-black' : ''}`}>
+                            <input
+                              type="radio"
+                              name={`type-${index}`} // เปลี่ยนให้ unique
+                              value="public_transport"
+                              checked={item.transport_type === "bicycle"}
+                              onChange={() => {
+                                const newPlan = [...plan];
+                                newPlan[index].transport_type = "bicycle";
+                                setPlan(newPlan);
+                              }}
+                              style={{ display: 'none' }}
+                            />
+                            <Bike size={18} />
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* ส่วนเลือกเวลา */}
+                      <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
+                        <span>Start</span>
+                        <select
+                          className="form-select border-secondary flex-fill"
+                          value={item.start ? format(new Date(item.start), 'dd/MM/yyyy') : ''}
+                          onChange={(e) => {
+                            const selectedDate = e.target.value;
+                            const newPlan = [...plan];
+                            const currentStart = newPlan[index].start
+                              ? new Date(newPlan[index].start)
+                              : new Date(options[0].split('/').reverse().join('-')); // วันเริ่มต้นจาก options
+
+                            newPlan[index].start = new Date(
+                              `${selectedDate.split('/').reverse().join('-')}T${format(currentStart, 'HH:mm')}`
+                            ).toISOString();
+
+                            setPlan(newPlan);
+                          }}
+                        >
+                          {options
+                            .filter(dateStr => {
+                              if (index === 0) return true;
+                              const prevItem = plan[index - 1];
+                              if (!prevItem || !prevItem.start) return true;
+                              const prevDate = new Date(prevItem.end || prevItem.start);
+                              const currentDate = new Date(dateStr.split('/').reverse().join('-'));
+                              return currentDate >= new Date(prevDate.toDateString());
+                            })
+                            .map((date, idx) => (
+                              <option key={idx}>{date}</option>
+                            ))}
+                        </select>
+
                         <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          defaultChecked
-                          style={{ display: 'none' }}
-                          value="Activities"
+                          type="time"
+                          className="form-control border-secondary flex-fill"
+                          value={item.start ? format(new Date(item.start), 'HH:mm') : ''}
+                          onChange={(e) => {
+                            const selectedTime = e.target.value;
+                            const newPlan = [...plan];
+
+                            const currentStart = newPlan[index].start
+                              ? new Date(newPlan[index].start)
+                              : new Date(options[0].split('/').reverse().join('-'));
+
+                            const dateStr = format(currentStart, 'yyyy-MM-dd');
+                            newPlan[index].start = new Date(`${dateStr}T${selectedTime}`).toISOString();
+
+                            // ✅ ตรวจสอบไม่ให้เวลาย้อนกลับ
+                            if (index > 0) {
+                              const prevEnd = new Date(plan[index - 1].end || plan[index - 1].start);
+                              const current = new Date(newPlan[index].start);
+                              if (current <= prevEnd) {
+                                showErrorToast("เวลาต้องมากกว่ารายการก่อนหน้า");
+                                return;
+                              }
+                            }
+
+                            setPlan(newPlan);
+                          }}
                         />
-                        <Compass className="me-2" size={18} />
-                        Activities
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="eat"
-                        />
-                        <Hamburger className="me-2" size={18} />
-                        Eat
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="hotel"
-                        />
-                        <Hotel className="me-2" size={18} />
-                        Hotel
-                      </label>
+                      </div>
+
+                    </div>
+
+                  </div>
+                  <div className="card-body border-0 bg-info-subtle">
+                    <div className="row align-items-center gx-3 gy-2">
+                      {/* Route Information */}
+                      <div className="col-12 col-md d-flex align-items-center flex-wrap">
+                        <p className="mb-0">พิพิธภัณฑสถานแห่งชาติโตเกียว</p>
+                        <MoveRight className="mx-3" size={25} />
+                        <p className="mb-0">ศาลเจ้าฮาคุซัน</p>
+                      </div>
+                      {/* Buttons */}
+                      <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
+                        <Link
+                          className="btn d-flex align-items-center btn-outline-dark"
+                          href={`/trip/${id_trip}/plan/map`}
+                        >
+                          ดูเส้นทาง
+                        </Link>
+                        <button className="btn d-flex align-items-center btn-outline-dark">
+                          ตั้งค่าเพิ่มเติม
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* ส่วนเลือกเวลา */}
-                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
-                    <span >Start</span>
-                    <select className="form-select border-secondary flex-fill">
-                      {options.map((date, index) => (
-                        <option key={index}>{date}</option>
-                      ))}
-                    </select>
-                    <input type="time" className="form-control border-secondary flex-fill" />
-                  </div>
                 </div>
+              </div>
+              );
+              }
+            })()}
+            </div>
+          ))}
 
-              </div>
-              <div className="card-body bg-body-secondary">
-                  <MapSearch SelectLocation={handleLocation} />
-              </div>
-              <div className="card-header d-flex align-items-center justify-content-between border-0 bg-body-secondary">
-                <div className="status">
-                  {/* ว่างไว้ */}
-                </div>
-                <div className="left d-flex align-items-center gap-2">
-                  <Link className="btn d-flex align-items-center btn-outline-dark" href={`/trip/${id_trip}/plan/map`}>
-                    ดูตำเเหน่ง
-                  </Link>
-                  <button className="btn d-flex align-items-center btn-outline-dark" >
-                    ตั้งค่าเพิ่มเติม
-                  </button>
-                </div>
-              </div>
+          {/* Add button */}
+          <div className="mb-3">
+            <div className="d-flex align-items-center justify-content-center gap-2">
+              <button onClick={addMainSection} className="btn d-flex align-items-center btn-outline-dark">
+                <Plus className='me-1' size={20} />
+                เพิ่มสถานที่ กิจกรรม
+              </button>
+              <button onClick={addTransportSection} className="btn d-flex align-items-center btn-outline-dark">
+                <Plus className='me-1' size={20} />
+                เพิ่มการเดินทาง
+              </button>
             </div>
           </div>
 
-          {/* transport section */}
-          <div className="transport-section mb-3 ">
-            <div className="card ">
-              <div className="card-header bg-info-subtle">
-                <div className="row gx-3 gy-2 align-items-center">
-                  <div className="col-md-auto">
-                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          defaultChecked
-                          style={{ display: 'none' }}
-                          value="public_transport"
-                        />
-                        <Bus size={18} />
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="car"
-                        />
-                        <CarFront size={18} />
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="plane"
-                        />
-                        <Plane size={18} />
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="train"
-                        />
-                        <TrainFront size={18} />
-          
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="walking"
-                        />
-                        <Footprints size={18} />
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="bicycle"
-                        />
-                        <Bike size={18} />
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* ส่วนเลือกเวลา */}
-                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
-                    <span >Start</span>
-                    <select className="form-select border-secondary flex-fill">
-                      {options.map((date, index) => (
-                        <option key={index}>{date}</option>
-                      ))}
-                    </select>
-                    <input type="time" className="form-control border-secondary flex-fill" />
-                  </div>
-                </div>
-
-              </div>
-              <div className="card-body border-0 bg-info-subtle">
-                <div className="row align-items-center gx-3 gy-2">
-                  {/* Route Information */}
-                  <div className="col-12 col-md d-flex align-items-center flex-wrap">
-                    <p className="mb-0">พิพิธภัณฑสถานแห่งชาติโตเกียว</p>
-                    <MoveRight className="mx-3" size={25} />
-                    <p className="mb-0">ศาลเจ้าฮาคุซัน</p>
-                  </div>
-                  {/* Buttons */}
-                  <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
-                    <Link
-                      className="btn d-flex align-items-center btn-outline-dark"
-                      href={`/trip/${id_trip}/plan/map`}
-                    >
-                      ดูเส้นทาง
-                    </Link>
-                    <button className="btn d-flex align-items-center btn-outline-dark">
-                      ตั้งค่าเพิ่มเติม
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* main section 2*/}
-          <div className="main-section mb-3">
-            <div className="card">
-              <div className="card-header bg-body-secondary">
-                <div className="titel d-flex align-items-center mb-2">
-                  <h2 className='mb-0 me-2'>2</h2>
-                  <input 
-                    type="text" 
-                    className="form-control border-0 border-bottom rounded-0 shadow-none fs-3" 
-                    placeholder="ตั้งชื่อ" 
-                    name="name"
-                    style={{
-                      background: 'transparent',
-                    }}
-                  />
-                </div>
-                <div className="row gx-3 gy-2 align-items-center">
-                  <div className="col-md-auto">
-                    <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center active bg-black">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          defaultChecked
-                          style={{ display: 'none' }}
-                          value="Activities"
-                        />
-                        <Compass className="me-2" size={18} />
-                        Activities
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="eat"
-                        />
-                        <Hamburger className="me-2" size={18} />
-                        Eat
-                      </label>
-                      <label className="btn btn-secondary input-outline-dark d-flex align-items-center">
-                        <input
-                          type="radio"
-                          name="options"
-                          autoComplete="off"
-                          style={{ display: 'none' }}
-                          value="hotel"
-                        />
-                        <Hotel className="me-2" size={18} />
-                        Hotel
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* ส่วนเลือกเวลา */}
-                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
-                    <span >Start</span>
-                    <select className="form-select border-secondary flex-fill">
-                      {options.map((date, index) => (
-                        <option key={index}>{date}</option>
-                      ))}
-                    </select>
-                    <input type="time" className="form-control border-secondary flex-fill" />
-                  </div>
-                </div>
-
-              </div>
-              <div className="card-body bg-body-secondary">
-                  <MapSearch SelectLocation={handleLocation} />
-              </div>
-              <div className="card-header d-flex align-items-center justify-content-between border-0 bg-body-secondary">
-                <div className="status">
-                  {/* ว่างไว้ */}
-                </div>
-                <div className="left d-flex align-items-center gap-2">
-                  <Link className="btn d-flex align-items-center btn-outline-dark" href={`/trip/${id_trip}/plan/map`}>
-                    ดูตำเเหน่ง
-                  </Link>
-                  <button className="btn d-flex align-items-center btn-outline-dark" >
-                    ตั้งค่าเพิ่มเติม
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* end box*/}
           <div className="card mb-3">

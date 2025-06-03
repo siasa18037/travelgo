@@ -39,7 +39,7 @@ const MapMultiMarker = ({ locations }) => {
         .setHTML(`
           <div>
             <h5>${loc.location_name}</h5>
-            <p>${loc.address}</p>
+            <a href="${loc.address}" >ตำเเหน่ง</a>
           </div>
         `);
 

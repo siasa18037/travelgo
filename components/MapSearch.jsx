@@ -1,13 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MapWithGeocoder from "@/components/MapWithGeocoder";
 import { Map, Search ,Link ,MapPin} from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 
-export default function MapSearch({ SelectLocation }) {
+export default function MapSearch({ SelectLocation , value }) {
     const [showMap, setShowMap] = useState(false);
     const [selectedMode, setSelectedMode] = useState("google"); // 'search' or 'google'
     const [googleLink, setGoogleLink] = useState("");
     const [location , setLocation] = useState();
+
+    useEffect(() => {
+        if (value) {
+            setLocation(value);
+            if (value.address) {
+                setGoogleLink(value.address);
+            }
+        }
+    }, [value]);
 
     const handleLocationSelected = (location) => {
         if (SelectLocation) {

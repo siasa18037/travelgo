@@ -1,0 +1,60 @@
+นี้คือโครงสร้างคราวๆ โดยห้ามเเก forntend ของชั้นใหเชื่อมอย่างเดียว โดยชั้นต้องการเเค่เพิ่ม  const [plan, setPlan] = useState(); เเค่นี้ให้ไดก่อนอย่าพึ่งไปเชื่อม bavkend ให้ได้เป้ฯ list ออกมาให้ได้ก่อน โดยมีเงื่อนไขดังดี้ <button className="btn d-flex align-items-center btn-outline-dark">
+                <Plus className='me-1' size={20} />
+                เพิ่มสถานที่ กิจกรรม
+              </button> จะเป็นการเพิ่ม<div className="main-section mb-3">
+            <div className="card">
+              <div className="card-header bg-body-secondary">
+          
+              </div>
+            </div>
+          </div> เเละถ้า  <button className="btn d-flex align-items-center btn-outline-dark">
+                <Plus className='me-1' size={20} />
+                เพิ่มการเดินทาง
+              </button> เป็นการเพิ่ม {/* transport section */}
+          <div className="transport-section mb-3 ">
+            <div className="card ">
+              <div className="card-header bg-info-subtle">
+             
+                  </div>
+
+                  {/* ส่วนเลือกเวลา */}
+                  <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
+                    <span >Start</span>
+                    <select className="form-select border-secondary flex-fill">
+                      {options.map((date, index) => (
+                        <option key={index}>{date}</option>
+                      ))}
+                    </select>
+                    <input type="time" className="form-control border-secondary flex-fill" />
+                  </div>
+                </div>
+
+              </div>
+              <div className="card-body border-0 bg-info-subtle">
+                <div className="row align-items-center gx-3 gy-2">
+                  {/* Route Information */}
+                  <div className="col-12 col-md d-flex align-items-center flex-wrap">
+                    <p className="mb-0">พิพิธภัณฑสถานแห่งชาติโตเกียว</p>
+                    <MoveRight className="mx-3" size={25} />
+                    <p className="mb-0">ศาลเจ้าฮาคุซัน</p>
+                  </div>
+                  {/* Buttons */}
+                  <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
+                    <Link
+                      className="btn d-flex align-items-center btn-outline-dark"
+                      href={`/trip/${id_trip}/plan/map`}
+                    >
+                      ดูเส้นทาง
+                    </Link>
+                    <button className="btn d-flex align-items-center btn-outline-dark">
+                      ตั้งค่าเพิ่มเติม
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div> เโดยเวลาที่เลือกต้องมากกว่าอันเเรกเสมอ โดยถ้ามี <div className="main-section mb-3"> ก่อนหน้าเเล้วจะสามารถเพิ่ม  <div className="main-section mb-3"> เเละ{/* transport section */}
+          <div className="transport-section mb-3 "> เเต่ถ้ามี {/* transport section */}
+          <div className="transport-section mb-3 "> อยู่เเล้วเพิ่มได้ เเค่ {/* main section 1*/}
+          <div className="main-section mb-3"> ตอนนี้ชั้นขอเเค่ plan :
