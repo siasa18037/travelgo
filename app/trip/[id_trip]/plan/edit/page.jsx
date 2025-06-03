@@ -98,21 +98,20 @@ export default function EditPlan() {
     return `${formatter.format(new Date(datetime))} (${countryName})`;
   };
 
-  // 
   const options = useMemo(() => {
-  if (!trip.start_date || !trip.end_date) return [];
+    if (!trip.start_date || !trip.end_date) return [];
 
-  const start = getDateObj(trip.start_date);
-  const end = getDateObj(trip.end_date);
-  const result = [];
+    const start = getDateObj(trip.start_date);
+    const end = getDateObj(trip.end_date);
+    const result = [];
 
-  let current = new Date(start);
-  while (current <= end) {
-    result.push(format(current, 'dd/MM/yyyy'));
-    current = addDays(current, 1);
-  }
+    let current = new Date(start);
+    while (current <= end) {
+      result.push(format(current, 'dd/MM/yyyy'));
+      current = addDays(current, 1);
+    }
 
-  return result;
+    return result;
   }, [trip.start_date, trip.end_date]);
 
   useEffect(() => {
@@ -239,11 +238,6 @@ export default function EditPlan() {
     });
   };
 
-  // useEffect(() => {
-  //   updateEndTimes();
-  // }, [plan.length, trip.end_date]);
-
-
   console.log(plan)
 
   if (!userId || loadingTrips) return <Loading />;
@@ -302,7 +296,12 @@ export default function EditPlan() {
                         className="form-control border-0 border-bottom rounded-0 shadow-none fs-3" 
                         placeholder="ตั้งชื่อ" 
                         name="name"
-                        // value={item.name}
+                        value={item.name || ''}
+                        onChange={(e) => {
+                          const newPlan = [...plan];
+                          newPlan[index].name = e.target.value;
+                          setPlan(newPlan);
+                        }}
                         style={{
                           background: 'transparent',
                         }}
@@ -393,16 +392,16 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
-                            // updateEndTimes()
+                            updateEndTimes();
                           }}
                         >
                           {options
                             .filter(dateStr => {
-                              if (index === 0) return true;
+                              if (index === 0) return true; // รายการแรกแสดงทั้งหมด
                               const prevItem = plan[index - 1];
-                              const prevDate = new Date(prevItem?.end?.datetime || prevItem?.start?.datetime);
+                              const prevDate = new Date(prevItem?.start?.datetime); // ใช้ start ของรายการก่อนหน้า
                               const currentDate = new Date(dateStr.split('/').reverse().join('-'));
-                              return currentDate >= new Date(prevDate.toDateString());
+                              return currentDate >= new Date(prevDate.toDateString()); // เปรียบเทียบแค่วันที่
                             })
                             .map((date, idx) => (
                               <option key={idx}>{date}</option>
@@ -432,27 +431,15 @@ export default function EditPlan() {
                             const dateStr = format(currentStart, 'yyyy-MM-dd');
                             const newDatetime = new Date(`${dateStr}T${selectedTime}`).toISOString();
 
-                            const currentTimezone = newPlan[index].start?.timezone;
-
-                            if (index > 0) {
-                              const prevEnd = new Date(plan[index - 1]?.end?.datetime || plan[index - 1]?.start?.datetime);
-                              const current = new Date(newDatetime);
-                              if (current <= prevEnd) {
-                                showErrorToast("เวลาต้องมากกว่ารายการก่อนหน้า");
-                                return;
-                              }
-                            }
-
                             newPlan[index].start = {
                               datetime: newDatetime,
-                              timezone: currentTimezone 
+                              timezone: newPlan[index].start?.timezone 
                             };
 
                             setPlan(newPlan);
-                            // updateEndTimes()
+                            updateEndTimes();
                           }}
                         />
-
                         <select
                           disabled={index === 0}
                           className="form-select input-outline-dark"
@@ -464,19 +451,16 @@ export default function EditPlan() {
 
                             if (!current?.datetime) return;
 
-                            // สร้าง formatter สำหรับ timezone เดิม
-                            const originalFormatter = new Intl.DateTimeFormat('en-US', {
+                            const formatter = new Intl.DateTimeFormat('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
                               hour12: false,
                               timeZone: current.timezone
                             });
                             
-                            // ดึงชั่วโมงและนาทีในเวลาท้องถิ่นเดิม
-                            const originalTime = originalFormatter.format(new Date(current.datetime));
+                            const originalTime = formatter.format(new Date(current.datetime));
                             const [hours, minutes] = originalTime.split(':').map(Number);
 
-                            // แปลง date เป็น string ใน timezone ใหม่ โดยใช้วันที่เดิม + เวลาเดิม
                             const localDate = format(new Date(current.datetime), 'yyyy-MM-dd');
                             const newDatetime = new Date(`${localDate}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`).toISOString();
 
@@ -486,7 +470,7 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
-                            // updateEndTimes()
+                            updateEndTimes();
                           }}
                         >
                           {timezones
@@ -630,10 +614,19 @@ export default function EditPlan() {
                         <span>Start</span>
                         <select
                           className="form-select border-secondary flex-fill"
-                          value={item.start?.datetime ? format(new Date(item.start.datetime), 'dd/MM/yyyy') : ''}
+                          value={
+                            index === 0
+                              ? format(new Date(trip.start_date?.datetime || trip.start_date), 'dd/MM/yyyy')
+                              : item.start?.datetime
+                                ? format(new Date(item.start.datetime), 'dd/MM/yyyy')
+                                : ''
+                          }
+                          disabled={index === 0}
                           onChange={(e) => {
+                            if (index === 0) return;
                             const selectedDate = e.target.value;
                             const newPlan = [...plan];
+
                             const currentStart = newPlan[index].start?.datetime
                               ? new Date(newPlan[index].start.datetime)
                               : new Date(options[0].split('/').reverse().join('-'));
@@ -647,16 +640,16 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
-                            // updateEndTimes()
+                            updateEndTimes();
                           }}
                         >
                           {options
                             .filter(dateStr => {
-                              if (index === 0) return true;
+                              if (index === 0) return true; // รายการแรกแสดงทั้งหมด
                               const prevItem = plan[index - 1];
-                              const prevDate = new Date(prevItem?.end?.datetime || prevItem?.start?.datetime);
+                              const prevDate = new Date(prevItem?.start?.datetime); // ใช้ start ของรายการก่อนหน้า
                               const currentDate = new Date(dateStr.split('/').reverse().join('-'));
-                              return currentDate >= new Date(prevDate.toDateString());
+                              return currentDate >= new Date(prevDate.toDateString()); // เปรียบเทียบแค่วันที่
                             })
                             .map((date, idx) => (
                               <option key={idx}>{date}</option>
@@ -668,6 +661,7 @@ export default function EditPlan() {
                           className="form-control border-secondary flex-fill"
                           value={item.start?.datetime ? format(new Date(item.start.datetime), 'HH:mm') : ''}
                           onChange={(e) => {
+                            if (index === 0) return;
                             const selectedTime = e.target.value;
                             const newPlan = [...plan];
 
@@ -678,27 +672,18 @@ export default function EditPlan() {
                             const dateStr = format(currentStart, 'yyyy-MM-dd');
                             const newDatetime = new Date(`${dateStr}T${selectedTime}`).toISOString();
 
-                            // ตรวจสอบไม่ให้เวลาย้อนกลับ
-                            if (index > 0) {
-                              const prevEnd = new Date(plan[index - 1]?.end?.datetime || plan[index - 1]?.start?.datetime);
-                              const current = new Date(newDatetime);
-                              if (current <= prevEnd) {
-                                showErrorToast("เวลาต้องมากกว่ารายการก่อนหน้า");
-                                return;
-                              }
-                            }
-
                             newPlan[index].start = {
                               datetime: newDatetime,
                               timezone: newPlan[index].start?.timezone 
                             };
 
                             setPlan(newPlan);
-                            // updateEndTimes()
+                            updateEndTimes();
                           }}
                         />
 
                         <select
+                          disabled={index === 0}
                           className="form-select input-outline-dark"
                           value={item.start?.timezone || ''}
                           onChange={(e) => {
@@ -708,19 +693,16 @@ export default function EditPlan() {
 
                             if (!current?.datetime) return;
 
-                            // สร้าง formatter สำหรับ timezone เดิม
-                            const originalFormatter = new Intl.DateTimeFormat('en-US', {
+                            const formatter = new Intl.DateTimeFormat('en-US', {
                               hour: '2-digit',
                               minute: '2-digit',
                               hour12: false,
                               timeZone: current.timezone
                             });
                             
-                            // ดึงชั่วโมงและนาทีในเวลาท้องถิ่นเดิม
-                            const originalTime = originalFormatter.format(new Date(current.datetime));
+                            const originalTime = formatter.format(new Date(current.datetime));
                             const [hours, minutes] = originalTime.split(':').map(Number);
 
-                            // แปลง date เป็น string ใน timezone ใหม่ โดยใช้วันที่เดิม + เวลาเดิม
                             const localDate = format(new Date(current.datetime), 'yyyy-MM-dd');
                             const newDatetime = new Date(`${localDate}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`).toISOString();
 
@@ -729,27 +711,8 @@ export default function EditPlan() {
                               timezone: newTimezone,
                             };
 
-                            // ทำเช่นเดียวกันกับ end time ถ้ามี
-                            if (newPlan[index].end?.datetime) {
-                              const endFormatter = new Intl.DateTimeFormat('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false,
-                                timeZone: newPlan[index].end.timezone
-                              });
-                              
-                              const endTime = endFormatter.format(new Date(newPlan[index].end.datetime));
-                              const [endHours, endMinutes] = endTime.split(':').map(Number);
-                              
-                              const endDate = format(new Date(newPlan[index].end.datetime), 'yyyy-MM-dd');
-                              newPlan[index].end = {
-                                datetime: new Date(`${endDate}T${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}:00`).toISOString(),
-                                timezone: newTimezone
-                              };
-                            }
-
                             setPlan(newPlan);
-                            // updateEndTimes()
+                            updateEndTimes();
                           }}
                         >
                           {timezones
