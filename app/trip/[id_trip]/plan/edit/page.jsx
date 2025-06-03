@@ -36,13 +36,6 @@ export default function EditPlan() {
 
   const locationList = [];
 
-  const currentLocation = {
-    name: "",
-    lat: 13.7563,
-    lng: 100.5018,
-    address: ""
-  }
-
   const handleLocation = (location, index) => {
     setPlan(prevPlan => {
       const newPlan = [...prevPlan];
@@ -221,6 +214,36 @@ export default function EditPlan() {
     ]);
   };
 
+  // ฟังก์ชันupdateEndTimes
+  const updateEndTimes = () => {
+    setPlan(prevPlan => {
+      const newPlan = [...prevPlan];
+      
+      // อัปเดตเวลา end ของแต่ละรายการให้เท่ากับ start ของรายการถัดไป
+      for (let i = 0; i < newPlan.length - 1; i++) {
+        newPlan[i].end = {
+          datetime: newPlan[i + 1].start.datetime,
+          timezone: newPlan[i + 1].start.timezone
+        };
+      }
+      
+      // สำหรับรายการสุดท้าย ให้ end เท่ากับ end_date ของทริป
+      if (newPlan.length > 0) {
+        newPlan[newPlan.length - 1].end = {
+          datetime: trip.end_date?.datetime || trip.end_date,
+          timezone: trip.end_date?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+      }
+      
+      return newPlan;
+    });
+  };
+
+  // useEffect(() => {
+  //   updateEndTimes();
+  // }, [plan.length, trip.end_date]);
+
+
   console.log(plan)
 
   if (!userId || loadingTrips) return <Loading />;
@@ -370,6 +393,7 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
+                            // updateEndTimes()
                           }}
                         >
                           {options
@@ -425,6 +449,7 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
+                            // updateEndTimes()
                           }}
                         />
 
@@ -461,6 +486,7 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
+                            // updateEndTimes()
                           }}
                         >
                           {timezones
@@ -621,6 +647,7 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
+                            // updateEndTimes()
                           }}
                         >
                           {options
@@ -667,6 +694,7 @@ export default function EditPlan() {
                             };
 
                             setPlan(newPlan);
+                            // updateEndTimes()
                           }}
                         />
 
@@ -721,6 +749,7 @@ export default function EditPlan() {
                             }
 
                             setPlan(newPlan);
+                            // updateEndTimes()
                           }}
                         >
                           {timezones
@@ -794,6 +823,8 @@ export default function EditPlan() {
               </div>
             </div>
           </div>
+
+          <button onClick={updateEndTimes}>update</button>
 
         </div>
 
