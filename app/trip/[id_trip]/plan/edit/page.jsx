@@ -211,6 +211,7 @@ export default function EditPlan() {
         }
       }
     ]);
+    updateLocation()
   };
 
   // ฟังก์ชันupdateEndTimes
@@ -238,8 +239,47 @@ export default function EditPlan() {
     });
   };
 
-  console.log(plan)
+  // ฟังก์ชันupdateLocation
+  const updateLocation = () => {
+    setPlan(prevPlan => {
+      return prevPlan.map((item, idx) => {
+        if (item.type === 'transport') {
+          // ดึงข้อมูลจากรายการก่อนหน้า (origin)
+          const prevItem = prevPlan[idx - 1];
+          const origin = prevItem?.data?.location || {
+            name: '',
+            lat: '',
+            lng: '',
+            address: ''
+          };
 
+          // ดึงข้อมูลจากรายการถัดไป (destination)
+          const nextItem = prevPlan[idx + 1];
+          const destination = nextItem?.data?.location || {
+            name: '',
+            lat: '',
+            lng: '',
+            address: ''
+          };
+
+          return {
+            ...item,
+            origin,
+            destination
+          };
+        }
+        return item;
+      });
+    });
+  }
+
+  // เพิ่มฟังก์ชันนี้ที่ส่วนบนของคอมโพเนนต์
+  const truncateName = (name) => {
+    if (!name) return 'ไม่มีข้อมูล';
+    return name.length > 30 ? `${name.substring(0, 30)}...` : name;
+  };
+
+  console.log(plan)
   if (!userId || loadingTrips) return <Loading />;
 
   return (
@@ -732,9 +772,13 @@ export default function EditPlan() {
                     <div className="row align-items-center gx-3 gy-2">
                       {/* Route Information */}
                       <div className="col-12 col-md d-flex align-items-center flex-wrap">
-                        <p className="mb-0">พิพิธภัณฑสถานแห่งชาติโตเกียว</p>
+                        <p className="mb-0">
+                          {truncateName(plan[index - 1]?.data?.location?.name) || 'ไม่มีจุดเริ่มต้น'}
+                        </p>
                         <MoveRight className="mx-3" size={25} />
-                        <p className="mb-0">ศาลเจ้าฮาคุซัน</p>
+                        <p className="mb-0">
+                          {truncateName(plan[index + 1]?.data?.location?.name) || 'ไม่มีจุดหมาย'}
+                        </p>
                       </div>
                       {/* Buttons */}
                       <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
@@ -786,8 +830,6 @@ export default function EditPlan() {
               </div>
             </div>
           </div>
-
-          <button onClick={updateEndTimes}>update</button>
 
         </div>
 
