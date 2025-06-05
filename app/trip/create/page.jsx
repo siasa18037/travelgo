@@ -12,6 +12,7 @@ import { logoutUser } from "@/utils/logout";
 import { useRouter } from "next/navigation";
 import { timezones } from '@/lib/timezone';
 import { utcToZonedTime, format } from 'date-fns-tz'
+import trip from '../[id_trip]/page';
 
 
 
@@ -85,6 +86,7 @@ export default function CreateTrip() {
       end_date: newEnd
     }));
   }, [startDate, startTime, endDate, endTime, startTimezone, endTimezone]);
+
 
 
   const handleChange = (e) => {

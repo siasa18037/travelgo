@@ -174,6 +174,7 @@ export default function EditTrip() {
   const handleSelectedUsers = (list) => {
     setForm((prev) => ({ ...prev, user: list }));
   }
+    // console.log(form)
 
   if (!userId || loadingTrips) return <Loading />;
 

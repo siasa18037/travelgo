@@ -10,9 +10,12 @@ import { useRouter , useParams} from "next/navigation";
 import Loading from '@/components/Loading';
 import Link from "next/link";
 import MapMultiMarker from '@/components/MapMultiMarker';
-import { format, addDays, isBefore } from 'date-fns';
+import { parse, format, addDays } from 'date-fns';
 import MapSearch from '@/components/MapSearch'
 import { timezones } from '@/lib/timezone';
+import { zonedTimeToUtc ,utcToZonedTime } from 'date-fns-tz';
+import { getLocalDateString, getLocalTimeString } from '@/utils/dateLocal';
+
 
 export default function EditPlan() {
   const router = useRouter();
@@ -36,6 +39,11 @@ export default function EditPlan() {
 
   const locationList = [];
 
+  // หา fallback timezone ตัวแรกของประเทศที่เลือก
+  const availableTimezones = timezones.filter(([country]) => trip.country.includes(country));
+  const fallbackTimezone = availableTimezones[0]?.[1] || 'UTC';
+
+
   const handleLocation = (location, index) => {
     setPlan(prevPlan => {
       const newPlan = [...prevPlan];
@@ -51,26 +59,26 @@ export default function EditPlan() {
   };
 
   // formatThaiDate
-  const formatThaiDate = (input) => {
-    let date, timezone = "";
+    const formatThaiDate = (input) => {
+      let date, timezone = "";
 
-    if (typeof input === 'object' && input !== null && input.datetime) {
-      date = new Date(input.datetime);
-      timezone = input.timezone || "";
-    } else {
-      date = new Date(input);
-    }
+      if (typeof input === 'object' && input !== null && input.datetime) {
+        date = new Date(input.datetime);
+        timezone = input.timezone || "";
+      } else {
+        date = new Date(input);
+      }
 
-    const day = date.getDate();
-    const monthNames = [
-      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-    ];
-    const month = monthNames[date.getMonth()];
-    const year = date.getFullYear() + 543; // แปลงเป็น พ.ศ.
+      const day = date.getDate();
+      const monthNames = [
+        "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      ];
+      const month = monthNames[date.getMonth()];
+      const year = date.getFullYear() + 543; // แปลงเป็น พ.ศ.
 
-    return `${day} ${month} ${year}`;
-  };
+      return `${day} ${month} ${year}`;
+    };
 
   // formatTime
   const formatTime = (input) => {
@@ -138,101 +146,126 @@ export default function EditPlan() {
         setLoadingTrips(false);
       });
   }, []);
+
+const formatDateTimeWithZone = (date, time, timezone) => {
+  const datePart = format(date, 'yyyy-MM-dd');
+  const dateTimeLocal = new Date(`${datePart}T${time}:00`);
+  const utcDate = zonedTimeToUtc(dateTimeLocal, timezone);
+
+  return {
+    datetime: utcDate.toISOString(),
+    timezone
+  };
+};
+
+  const parseDateTimeWithZone = ({ datetime, timezone }) => {
+    const utcDate = new Date(datetime);
+    // แปลงเวลาตาม timezone ที่กำหนด
+    const dateStr = format(utcDate, 'yyyy-MM-dd', { timeZone: timezone });
+    const timeStr = format(utcDate, 'HH:mm', { timeZone: timezone });
+    return {
+      date: dateStr,
+      time: timeStr,
+      timezone
+    };
+  };
   
-  const addMainSection = () => {
-    const isFirst = plan.length === 0;
-    const defaultTimezone = (() => {
-      const tzMatch = timezones.find(([country]) => trip.country.includes(country));
-      return tzMatch ? tzMatch[1] : Intl.DateTimeFormat().resolvedOptions().timeZone;
-    })();
+const addMainSection = () => {
+  const isFirst = plan.length === 0;
 
-    const startDate = isFirst
-      ? {
-          datetime: trip.start_date?.datetime || new Date().toISOString(),
-          timezone: trip.start_date?.timezone || defaultTimezone
-        }
-      : { datetime: '', timezone: defaultTimezone };
+  let startDate;
 
-    setPlan((prev) => [
-      ...prev,
-      {
-        type: 'Activities',
-        name: '',
-        start: startDate,
-        end: { datetime: '', timezone: ''},
-        data: {
-          location: {
-            name: '',
-            lat: '',
-            lng: '',
-            address: ''
-          }
-        }
-      }
-    ]);
-  };
-
-  const addTransportSection = () => {
-    if (plan.length === 0) {
-      showErrorToast("กรุณาเพิ่มสถานที่หรือกิจกรรมเริ่มต้น");
-      return;
-    }
-
+  if (isFirst) {
+    startDate = trip.start_date;
+  } else {
     const lastItem = plan[plan.length - 1];
-    if (lastItem?.type === 'transport') {
-      showErrorToast("ไม่สามารถเพิ่มการเดินทางซ้ำติดกันได้");
-      return;
-    }
+    startDate = lastItem.start && lastItem.start.datetime
+    ? lastItem.start
+    : lastItem.end;
+  }
 
-    const defaultTimezone = (() => {
-      const tzMatch = timezones.find(([country]) => trip.country.includes(country));
-      return tzMatch ? tzMatch[1] : Intl.DateTimeFormat().resolvedOptions().timeZone;
-    })();
-
-    setPlan((prev) => [
-      ...prev,
-      {
-        type: 'transport',
-        name: '',
-        transport_type: 'public_transport',
-        start: { datetime: '', timezone: defaultTimezone },
-        end: { datetime: '', timezone: '' },
-        origin: {
-          name: '',
-          lat: '',
-          lng: '',
-          address: ''
-        },
-        destination: {
+  setPlan((prev) => [
+    ...prev,
+    {
+      type: 'Activities',
+      name: '',
+      start: startDate,
+      end: '',
+      data: {
+        location: {
           name: '',
           lat: '',
           lng: '',
           address: ''
         }
       }
-    ]);
-    updateLocation()
-  };
+    }
+  ]);
+};
+
+const addTransportSection = () => {
+  if (plan.length === 0) {
+    showErrorToast("กรุณาเพิ่มสถานที่หรือกิจกรรมเริ่มต้น");
+    return;
+  }
+
+  const lastItem = plan[plan.length - 1];
+  if (lastItem?.type === 'transport') {
+    showErrorToast("ไม่สามารถเพิ่มการเดินทางซ้ำติดกันได้");
+    return;
+  }
+
+  const startDate = lastItem.start && lastItem.start.datetime
+    ? lastItem.start
+    : lastItem.end;
+
+  setPlan((prev) => [
+    ...prev,
+    {
+      type: 'transport',
+      name: '',
+      transport_type: 'public_transport',
+      start: startDate,
+      end: { datetime: '', timezone: '' },
+      origin: {
+        name: '',
+        lat: '',
+        lng: '',
+        address: ''
+      },
+      destination: {
+        name: '',
+        lat: '',
+        lng: '',
+        address: ''
+      }
+    }
+  ]);
+  updateLocation();
+};
 
   // ฟังก์ชันupdateEndTimes
   const updateEndTimes = () => {
     setPlan(prevPlan => {
       const newPlan = [...prevPlan];
       
-      // อัปเดตเวลา end ของแต่ละรายการให้เท่ากับ start ของรายการถัดไป
       for (let i = 0; i < newPlan.length - 1; i++) {
-        newPlan[i].end = {
-          datetime: newPlan[i + 1].start.datetime,
-          timezone: newPlan[i + 1].start.timezone
-        };
+        if (newPlan[i + 1].start?.datetime) {
+          newPlan[i].end = {
+            datetime: newPlan[i + 1].start.datetime,
+            timezone: newPlan[i + 1].start.timezone
+          };
+        }
       }
       
-      // สำหรับรายการสุดท้าย ให้ end เท่ากับ end_date ของทริป
       if (newPlan.length > 0) {
-        newPlan[newPlan.length - 1].end = {
-          datetime: trip.end_date?.datetime || trip.end_date,
-          timezone: trip.end_date?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
-        };
+        const lastItem = newPlan[newPlan.length - 1];
+        if (trip.end_date?.datetime) {
+          newPlan[newPlan.length - 1].end = {
+            datetime: trip.end_date.datetime,
+            timezone: trip.end_date.timezone || lastItem.start.timezone
+          };
+        }
       }
       
       return newPlan;
@@ -273,7 +306,7 @@ export default function EditPlan() {
     });
   }
 
-  // เพิ่มฟังก์ชันนี้ที่ส่วนบนของคอมโพเนนต์
+  // Name
   const truncateName = (name) => {
     if (!name) return 'ไม่มีข้อมูล';
     return name.length > 30 ? `${name.substring(0, 30)}...` : name;
@@ -322,6 +355,7 @@ export default function EditPlan() {
           {plan.map((item, index) => (
             <div key={index}>
             {(() => {
+
               if (item.type !== 'transport') {
                 mainIndex++;
                 return (
@@ -401,85 +435,75 @@ export default function EditPlan() {
                         </div>
                       </div>
 
-                      {/* ส่วนเลือกเวลา */}
+                      {/* ส่วนเลือกวันเวลา */}
                       <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
                         <span>Start</span>
+                        {/* เลือกวัน */}
                         <select
                           className="form-select border-secondary flex-fill"
-                          value={
-                            index === 0
-                              ? format(new Date(trip.start_date?.datetime || trip.start_date), 'dd/MM/yyyy')
-                              : item.start?.datetime
-                                ? format(new Date(item.start.datetime), 'dd/MM/yyyy')
-                                : ''
-                          }
+                          value={getLocalDateString(item.start, fallbackTimezone)}
                           disabled={index === 0}
                           onChange={(e) => {
                             if (index === 0) return;
-                            const selectedDate = e.target.value;
+                            const selectedDate = e.target.value; 
                             const newPlan = [...plan];
 
-                            const currentStart = newPlan[index].start?.datetime
-                              ? new Date(newPlan[index].start.datetime)
-                              : new Date(options[0].split('/').reverse().join('-'));
+                            // ใช้ parse เพื่อสร้าง date object จาก string (dd/MM/yyyy)
+                            const dateObj = parse(selectedDate, 'dd/MM/yyyy', new Date());
 
-                            const timePart = format(currentStart, 'HH:mm');
-                            const datePart = selectedDate.split('/').reverse().join('-');
+                            // เอา time เดิม ถ้าไม่มีให้ใช้ '00:00'
+                            const currentTime = item.start?.datetime
+                              ? parseDateTimeWithZone(item.start).time
+                              : '00:00';
 
-                            newPlan[index].start = {
-                              datetime: new Date(`${datePart}T${timePart}`).toISOString(),
-                              timezone: newPlan[index].start?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
-                            };
-
+                            newPlan[index].start = formatDateTimeWithZone(
+                              dateObj,
+                              currentTime,
+                              item.start?.timezone || fallbackTimezone,
+                            );
                             setPlan(newPlan);
                             updateEndTimes();
                           }}
                         >
                           {options
                             .filter(dateStr => {
-                              if (index === 0) return true; // รายการแรกแสดงทั้งหมด
+                              if (index === 0) return true; 
                               const prevItem = plan[index - 1];
-                              const prevDate = new Date(prevItem?.start?.datetime); // ใช้ start ของรายการก่อนหน้า
+                              const prevDate = new Date(prevItem?.start?.datetime); 
                               const currentDate = new Date(dateStr.split('/').reverse().join('-'));
-                              return currentDate >= new Date(prevDate.toDateString()); // เปรียบเทียบแค่วันที่
+                              return currentDate >= new Date(prevDate.toDateString());
                             })
                             .map((date, idx) => (
                               <option key={idx}>{date}</option>
                             ))}
                         </select>
-
+                        {/* เลือกเวลา */}
                         <input
                           type="time"
                           className="form-control border-secondary flex-fill"
-                          value={
-                            index === 0
-                              ? format(new Date(trip.start_date?.datetime || trip.start_date), 'HH:mm')
-                              : item.start?.datetime
-                                ? format(new Date(item.start.datetime), 'HH:mm')
-                                : ''
-                          }
+                          value={getLocalTimeString(item.start, fallbackTimezone)}
                           disabled={index === 0}
                           onChange={(e) => {
                             if (index === 0) return;
                             const selectedTime = e.target.value;
                             const newPlan = [...plan];
 
-                            const currentStart = newPlan[index].start?.datetime
-                              ? new Date(newPlan[index].start.datetime)
-                              : new Date(options[0].split('/').reverse().join('-'));
+                            const currentDate = item.start?.datetime
+                              ? parseDateTimeWithZone(item.start).date
+                              : options[0].split('/').reverse().join('-'); 
 
-                            const dateStr = format(currentStart, 'yyyy-MM-dd');
-                            const newDatetime = new Date(`${dateStr}T${selectedTime}`).toISOString();
+                            const dateObj = parse(currentDate, 'yyyy-MM-dd', new Date());
 
-                            newPlan[index].start = {
-                              datetime: newDatetime,
-                              timezone: newPlan[index].start?.timezone 
-                            };
-
+                            newPlan[index].start = formatDateTimeWithZone(
+                              dateObj,
+                              selectedTime,
+                              item.start?.timezone || fallbackTimezone
+                            );
                             setPlan(newPlan);
                             updateEndTimes();
                           }}
                         />
+                        {/* เลือกtimezone */}
                         <select
                           disabled={index === 0}
                           className="form-select input-outline-dark"
@@ -487,28 +511,33 @@ export default function EditPlan() {
                           onChange={(e) => {
                             const newTimezone = e.target.value;
                             const newPlan = [...plan];
-                            const current = newPlan[index].start;
 
-                            if (!current?.datetime) return;
+                            let dateObj, time;
 
-                            const formatter = new Intl.DateTimeFormat('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false,
-                              timeZone: current.timezone
-                            });
-                            
-                            const originalTime = formatter.format(new Date(current.datetime));
-                            const [hours, minutes] = originalTime.split(':').map(Number);
+                            if (!item.start?.datetime) {
+                              const lastItem = plan[plan.length - 1];
+                              if (lastItem?.start?.datetime) {
+                                const lastTz = lastItem.start.timezone || newTimezone;
+                                // เอา local date จาก lastItem ตาม timezone เดิมของ lastItem
+                                const localDateObj = utcToZonedTime(new Date(lastItem.start.datetime), lastTz);
+                                dateObj = localDateObj;
+                                time = format(localDateObj, 'HH:mm');
+                              } else {
+                                dateObj = new Date();
+                                time = '00:00';
+                              }
+                            } else {
+                              const oldTz = item.start.timezone || newTimezone;
+                              const localDateObj = utcToZonedTime(new Date(item.start.datetime), oldTz);
+                              dateObj = localDateObj;
+                              time = format(localDateObj, 'HH:mm');
+                            }
 
-                            const localDate = format(new Date(current.datetime), 'yyyy-MM-dd');
-                            const newDatetime = new Date(`${localDate}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`).toISOString();
-
-                            newPlan[index].start = {
-                              datetime: newDatetime,
-                              timezone: newTimezone,
-                            };
-
+                            newPlan[index].start = formatDateTimeWithZone(
+                              dateObj,
+                              time,
+                              newTimezone
+                            );
                             setPlan(newPlan);
                             updateEndTimes();
                           }}
@@ -526,6 +555,7 @@ export default function EditPlan() {
 
                   </div>
                   <div className="card-body bg-body-secondary">
+                    {/* {item.start.datetime + item.start.timezone} */}
                       <MapSearch 
                         SelectLocation={(location) => handleLocation(location, index)} 
                         value={item.data.location} 
@@ -652,76 +682,72 @@ export default function EditPlan() {
                       {/* ส่วนเลือกเวลา */}
                       <div className="col-md d-flex flex-wrap flex-md-nowrap align-items-center gap-2">
                         <span>Start</span>
+                        {/* เลือกวัน */}
                         <select
                           className="form-select border-secondary flex-fill"
-                          value={
-                            index === 0
-                              ? format(new Date(trip.start_date?.datetime || trip.start_date), 'dd/MM/yyyy')
-                              : item.start?.datetime
-                                ? format(new Date(item.start.datetime), 'dd/MM/yyyy')
-                                : ''
-                          }
+                          value={getLocalDateString(item.start, fallbackTimezone)}
                           disabled={index === 0}
                           onChange={(e) => {
                             if (index === 0) return;
-                            const selectedDate = e.target.value;
+                            const selectedDate = e.target.value; 
                             const newPlan = [...plan];
 
-                            const currentStart = newPlan[index].start?.datetime
-                              ? new Date(newPlan[index].start.datetime)
-                              : new Date(options[0].split('/').reverse().join('-'));
+                            // ใช้ parse เพื่อสร้าง date object จาก string (dd/MM/yyyy)
+                            const dateObj = parse(selectedDate, 'dd/MM/yyyy', new Date());
 
-                            const timePart = format(currentStart, 'HH:mm');
-                            const datePart = selectedDate.split('/').reverse().join('-');
+                            // เอา time เดิม ถ้าไม่มีให้ใช้ '00:00'
+                            const currentTime = item.start?.datetime
+                              ? parseDateTimeWithZone(item.start).time
+                              : '00:00';
 
-                            newPlan[index].start = {
-                              datetime: new Date(`${datePart}T${timePart}`).toISOString(),
-                              timezone: newPlan[index].start?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
-                            };
-
+                            newPlan[index].start = formatDateTimeWithZone(
+                              dateObj,
+                              currentTime,
+                              item.start?.timezone || fallbackTimezone,
+                            );
                             setPlan(newPlan);
                             updateEndTimes();
                           }}
                         >
                           {options
                             .filter(dateStr => {
-                              if (index === 0) return true; // รายการแรกแสดงทั้งหมด
+                              if (index === 0) return true; 
                               const prevItem = plan[index - 1];
-                              const prevDate = new Date(prevItem?.start?.datetime); // ใช้ start ของรายการก่อนหน้า
+                              const prevDate = new Date(prevItem?.start?.datetime); 
                               const currentDate = new Date(dateStr.split('/').reverse().join('-'));
-                              return currentDate >= new Date(prevDate.toDateString()); // เปรียบเทียบแค่วันที่
+                              return currentDate >= new Date(prevDate.toDateString());
                             })
                             .map((date, idx) => (
                               <option key={idx}>{date}</option>
                             ))}
                         </select>
-
+                        {/* เลือกเวลา */}
                         <input
                           type="time"
                           className="form-control border-secondary flex-fill"
-                          value={item.start?.datetime ? format(new Date(item.start.datetime), 'HH:mm') : ''}
+                          value={getLocalTimeString(item.start, fallbackTimezone)}
+                          disabled={index === 0}
                           onChange={(e) => {
                             if (index === 0) return;
                             const selectedTime = e.target.value;
                             const newPlan = [...plan];
 
-                            const currentStart = newPlan[index].start?.datetime
-                              ? new Date(newPlan[index].start.datetime)
-                              : new Date(options[0].split('/').reverse().join('-'));
+                            const currentDate = item.start?.datetime
+                              ? parseDateTimeWithZone(item.start).date
+                              : options[0].split('/').reverse().join('-'); 
 
-                            const dateStr = format(currentStart, 'yyyy-MM-dd');
-                            const newDatetime = new Date(`${dateStr}T${selectedTime}`).toISOString();
+                            const dateObj = parse(currentDate, 'yyyy-MM-dd', new Date());
 
-                            newPlan[index].start = {
-                              datetime: newDatetime,
-                              timezone: newPlan[index].start?.timezone 
-                            };
-
+                            newPlan[index].start = formatDateTimeWithZone(
+                              dateObj,
+                              selectedTime,
+                              item.start?.timezone || fallbackTimezone
+                            );
                             setPlan(newPlan);
                             updateEndTimes();
                           }}
                         />
-
+                        {/* เลือกtimezone */}
                         <select
                           disabled={index === 0}
                           className="form-select input-outline-dark"
@@ -729,28 +755,33 @@ export default function EditPlan() {
                           onChange={(e) => {
                             const newTimezone = e.target.value;
                             const newPlan = [...plan];
-                            const current = newPlan[index].start;
 
-                            if (!current?.datetime) return;
+                            let dateObj, time;
 
-                            const formatter = new Intl.DateTimeFormat('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false,
-                              timeZone: current.timezone
-                            });
-                            
-                            const originalTime = formatter.format(new Date(current.datetime));
-                            const [hours, minutes] = originalTime.split(':').map(Number);
+                            if (!item.start?.datetime) {
+                              const lastItem = plan[plan.length - 1];
+                              if (lastItem?.start?.datetime) {
+                                const lastTz = lastItem.start.timezone || newTimezone;
+                                // เอา local date จาก lastItem ตาม timezone เดิมของ lastItem
+                                const localDateObj = utcToZonedTime(new Date(lastItem.start.datetime), lastTz);
+                                dateObj = localDateObj;
+                                time = format(localDateObj, 'HH:mm');
+                              } else {
+                                dateObj = new Date();
+                                time = '00:00';
+                              }
+                            } else {
+                              const oldTz = item.start.timezone || newTimezone;
+                              const localDateObj = utcToZonedTime(new Date(item.start.datetime), oldTz);
+                              dateObj = localDateObj;
+                              time = format(localDateObj, 'HH:mm');
+                            }
 
-                            const localDate = format(new Date(current.datetime), 'yyyy-MM-dd');
-                            const newDatetime = new Date(`${localDate}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`).toISOString();
-
-                            newPlan[index].start = {
-                              datetime: newDatetime,
-                              timezone: newTimezone,
-                            };
-
+                            newPlan[index].start = formatDateTimeWithZone(
+                              dateObj,
+                              time,
+                              newTimezone
+                            );
                             setPlan(newPlan);
                             updateEndTimes();
                           }}
@@ -771,6 +802,7 @@ export default function EditPlan() {
                   <div className="card-body border-0 bg-info-subtle">
                     <div className="row align-items-center gx-3 gy-2">
                       {/* Route Information */}
+                      {/* {item.start.datetime + item.start.timezone} */}
                       <div className="col-12 col-md d-flex align-items-center flex-wrap">
                         <p className="mb-0">
                           {truncateName(plan[index - 1]?.data?.location?.name) || 'ไม่มีจุดเริ่มต้น'}
@@ -839,6 +871,6 @@ export default function EditPlan() {
         </div>
       </div>
 
-    </main>
+    </main> 
   );
 } 
