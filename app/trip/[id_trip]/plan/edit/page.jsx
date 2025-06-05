@@ -56,6 +56,7 @@ export default function EditPlan() {
       };
       return newPlan;
     });
+    updateLocation();
   };
 
   // formatThaiDate
