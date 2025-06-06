@@ -377,11 +377,11 @@ export default function EditPlan() {
       updateEndTimes();
       updateLocation();
 
-      // const validation = validateTimeSequence(plan);
-      // if (!validation.valid) {
-      //   showErrorToast(validation.message);
-      //   return;
-      // }
+      const validation = validateTimeSequence(plan);
+      if (!validation.valid) {
+        showErrorToast(validation.message);
+        return;
+      }
       
 
       const response = await axios.put(`/api/trip/${userId}/${id_trip}/plan`, plan);
@@ -398,12 +398,52 @@ export default function EditPlan() {
     }
   };
 
+  const handleDeletePlan = (index) => {
+    const newPlan = [...plan];
+    
+    // กรณีลบ main-section
+    if (newPlan[index].type !== 'transport') {
+      // เช็คว่ามี transport-section ตามมาหรือไม่
+      if (index < newPlan.length - 1 && newPlan[index + 1].type === 'transport') {
+        // ลบ transport-section ที่ตามมาด้วย
+        newPlan.splice(index, 2);
+      } else {
+        // ลบเฉพาะ main-section ปัจจุบัน
+        newPlan.splice(index, 1);
+      }
+    } 
+    // กรณีลบ transport-section
+    else {
+      // ลบเฉพาะ transport-section ปัจจุบัน
+      newPlan.splice(index, 1);
+      
+      // เช็คว่ามี main-section ก่อนหน้าและหลังหรือไม่
+      if (index > 0 && index < newPlan.length) {
+        // อัปเดตเวลาของ main-section หลังการลบ
+        const prevItem = newPlan[index - 1];
+        const nextItem = newPlan[index];
+        
+        // ตั้งค่า end ของรายการก่อนหน้าให้เท่ากับ start ของรายการถัดไป
+        if (prevItem && nextItem.start) {
+          prevItem.end = {
+            datetime: nextItem.start.datetime,
+            timezone: nextItem.start.timezone
+          };
+        }
+      }
+    }
+    
+    setPlan(newPlan);
+    updateLocationMap();
+    updateEndTimes();
+  };
+
 
   console.log(plan)
   if (!userId || loadingTrips) return <Loading />;
 
   return (
-    <main className='EditPlan container'>
+    <main className='EditPlan container pb-5'>
       <div className="head-title d-flex justify-content-between align-items-center">
         <h4 className="mt-2 d-flex align-items-center mb-2">
           <Route size={24} className="me-2" />
@@ -679,6 +719,12 @@ export default function EditPlan() {
                       <button className="btn d-flex align-items-center btn-outline-dark" >
                         ตั้งค่าเพิ่มเติม
                       </button>
+                      <button 
+                        className="btn d-flex align-items-center btn-danger" 
+                        onClick={() => handleDeletePlan(index)}
+                      >
+                        ลบ
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -949,6 +995,12 @@ export default function EditPlan() {
                         <button className="btn d-flex align-items-center btn-outline-dark">
                           ตั้งค่าเพิ่มเติม
                         </button>
+                        <button 
+                          className="btn d-flex align-items-center btn-danger" 
+                          onClick={() => handleDeletePlan(index)}
+                        >
+                          ลบ
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1015,9 +1067,6 @@ export default function EditPlan() {
               </div>
             </div>
           </div>
-
-
-
 
         </div>
 
