@@ -3,7 +3,7 @@
 import { useTrip } from '@/components/TripContext';
 import { useState, useEffect ,useMemo } from 'react';
 import axios from 'axios';
-import { Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,CircleArrowUp,CircleArrowDown,MoveRight ,Plus} from 'lucide-react';
+import { Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,CircleArrowUp,CircleArrowDown,MoveRight ,Plus ,ClockAlert} from 'lucide-react';
 import './edit.css'
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import { useRouter , useParams} from "next/navigation";
@@ -23,15 +23,16 @@ export default function EditPlan() {
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [locationList, setLocationList] = useState([]);
+  const [openIndex, setOpenIndex] = useState(null);
   const [plan, setPlan] = useState([]);
   const [trip, setTrip] = useState({
     name: '',
     start_date: '', 
     end_date: '', 
     country: [],
+    updatedAt :''
   });
   let mainIndex = 0;
-  
 
   const getDateObj = (input) => {
     if (typeof input === 'object' && input !== null && input.datetime) {
@@ -152,6 +153,7 @@ export default function EditPlan() {
             start_date: data.start_date, 
             end_date: data.end_date, 
             country: data.country,
+            updatedAt: data.updatedAt,
           });
           setPlan(data.plan)
         } else {
@@ -342,12 +344,11 @@ export default function EditPlan() {
         }
       }
 
-      // ดึง timezone จากข้อมูล (ถ้าไม่มีใช้ fallbackTimezone)
       const currentTimezone = currentItem.start.timezone;
       const nextTimezone = nextItem.start.timezone;
 
       // แปลงเวลาเป็น local time ใน timezone ของตัวเองก่อน
-      const currentStartLocal = utcToZonedTime(new Date(currentItem.end.datetime), currentTimezone);
+      const currentStartLocal = utcToZonedTime(new Date(currentItem.start.datetime), currentTimezone);
       const nextStartLocal = utcToZonedTime(new Date(nextItem.start.datetime), nextTimezone);
 
       // แปลง local time เป็น timestamp สำหรับเปรียบเทียบ
@@ -355,7 +356,6 @@ export default function EditPlan() {
       const nextStartTime = nextStartLocal.getTime();
 
       if (nextStartTime < currentStartTime) {
-        // แปลงเวลาเพื่อแสดงในข้อความแจ้งเตือน
         const currentStartStr = format(currentStartLocal, 'dd/MM/yyyy HH:mm', { timeZone: currentTimezone });
         const nextStartStr = format(nextStartLocal, 'dd/MM/yyyy HH:mm', { timeZone: nextTimezone });
         
@@ -637,6 +637,26 @@ export default function EditPlan() {
                               </option>
                             ))}
                         </select>
+
+                        {/* show utc time */}
+                        <div className="position-relative">
+                          <button
+                            className="btn d-flex align-items-center px-0"
+                            onClick={() => setOpenIndex(openIndex === index ? null : index)} // toggle
+                          >
+                            <ClockAlert size={16} color="red" />
+                          </button>
+                          
+                          {openIndex === index && (
+                            <div
+                              className="position-absolute bg-light px-2 py-1 rounded shadow-sm"
+                              style={{ fontSize: "0.75rem", top: 0, left: '25px', zIndex: 10 }}
+                              >
+                              {item.start?.datetime} ({item.start?.timezone})
+                            </div>
+                          )}
+                        </div>
+                      
                       </div>
                     </div>
 
@@ -881,6 +901,25 @@ export default function EditPlan() {
                               </option>
                             ))}
                         </select>
+
+                        {/* show utc time */}
+                        <div className="position-relative">
+                          <button
+                            className="btn d-flex align-items-center px-0"
+                            onClick={() => setOpenIndex(openIndex === index ? null : index)} // toggle
+                          >
+                            <ClockAlert size={16} color="red" />
+                          </button>
+                          
+                          {openIndex === index && (
+                            <div
+                              className="position-absolute bg-light px-2 py-1 rounded shadow-sm"
+                              style={{ fontSize: "0.75rem", top: 0, left: '25px', zIndex: 10 }}
+                              >
+                              {item.start?.datetime} ({item.start?.timezone})
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                     </div>
@@ -936,7 +975,6 @@ export default function EditPlan() {
             </div>
           </div>
 
-
           {/* end box*/}
           <div className="card mb-3">
             <div className="card-body d-flex justify-content-between align-items-center">
@@ -950,23 +988,35 @@ export default function EditPlan() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="btn custom-dark-hover w-100 d-flex align-items-center justify-content-center p-2"
-            disabled={loadingPlan}
-            onClick={handleSavePlan}
-          >
-            {loadingPlan ? (
-              <>
-                <div className="spinner-border spinner-border-sm me-2" role="status">
-                  <span className="visually-hidden">Loading...</span>
+          {/* Fixed Save Plan Bar Styled as Card */}
+          <div className="fixed-bottom w-100 bg-transparent pb-2 px-2">
+            <div className="card shadow-sm mx-auto " style={{ maxWidth: "720px" }}>
+              <div className="p-2 card-body d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center ms-3 " style={{fontSize:'14px'}}>
+                  Last update : {trip.updatedAt}
                 </div>
-                กำลังบันทึก...
-              </>
-            ) : (
-              "Save Plan"
-            )}
-          </button>
+                <button
+                  type="submit"
+                  className="btn btn-dark px-4 py-2 custom-dark-hover"
+                  disabled={loadingPlan}
+                  onClick={handleSavePlan}
+                >
+                  {loadingPlan ? (
+                    <>
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      กำลังบันทึก...
+                    </>
+                  ) : (
+                    "บันทึก"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+
 
 
         </div>
