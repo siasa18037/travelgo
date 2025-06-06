@@ -21,6 +21,8 @@ export default function EditPlan() {
   const router = useRouter();
   const { userType, userId, id_trip } = useTrip();
   const [loadingTrips, setLoadingTrips] = useState(true);
+  const [loadingPlan, setLoadingPlan] = useState(false);
+  const [locationList, setLocationList] = useState([]);
   const [plan, setPlan] = useState([]);
   const [trip, setTrip] = useState({
     name: '',
@@ -29,6 +31,7 @@ export default function EditPlan() {
     country: [],
   });
   let mainIndex = 0;
+  
 
   const getDateObj = (input) => {
     if (typeof input === 'object' && input !== null && input.datetime) {
@@ -37,7 +40,18 @@ export default function EditPlan() {
     return new Date(input);
   };
 
-  const locationList = [];
+  const updateLocationMap = () => {
+    const list = plan
+      .filter(item => item.type !== 'transport')
+      .map(item => ({
+        location_name: item.data?.location?.name || '',
+        lat: item.data?.location?.lat || '',
+        lng: item.data?.location?.lng || '',
+        address: item.data?.location?.address || '',
+      }));
+    setLocationList(list);
+  };
+  
 
   // หา fallback timezone ตัวแรกของประเทศที่เลือก
   const availableTimezones = timezones.filter(([country]) => trip.country.includes(country));
@@ -57,6 +71,7 @@ export default function EditPlan() {
       return newPlan;
     });
     updateLocation();
+    updateLocationMap();
   };
 
   // formatThaiDate
@@ -148,7 +163,7 @@ export default function EditPlan() {
       });
   }, []);
 
-const formatDateTimeWithZone = (date, time, timezone) => {
+  const formatDateTimeWithZone = (date, time, timezone) => {
   const datePart = format(date, 'yyyy-MM-dd');
   const dateTimeLocal = new Date(`${datePart}T${time}:00`);
   const utcDate = zonedTimeToUtc(dateTimeLocal, timezone);
@@ -171,7 +186,7 @@ const formatDateTimeWithZone = (date, time, timezone) => {
     };
   };
   
-const addMainSection = () => {
+  const addMainSection = () => {
   const isFirst = plan.length === 0;
 
   let startDate;
@@ -204,7 +219,7 @@ const addMainSection = () => {
   ]);
 };
 
-const addTransportSection = () => {
+  const addTransportSection = () => {
   if (plan.length === 0) {
     showErrorToast("กรุณาเพิ่มสถานที่หรือกิจกรรมเริ่มต้น");
     return;
@@ -225,7 +240,9 @@ const addTransportSection = () => {
     {
       type: 'transport',
       name: '',
-      transport_type: 'public_transport',
+      data:{
+        transport_type: 'public_transport',
+      },
       start: startDate,
       end: { datetime: '', timezone: '' },
       origin: {
@@ -243,7 +260,7 @@ const addTransportSection = () => {
     }
   ]);
   updateLocation();
-};
+  };
 
   // ฟังก์ชันupdateEndTimes
   const updateEndTimes = () => {
@@ -312,6 +329,75 @@ const addTransportSection = () => {
     if (!name) return 'ไม่มีข้อมูล';
     return name.length > 30 ? `${name.substring(0, 30)}...` : name;
   };
+
+  const validateTimeSequence = (plan) => {
+    for (let i = 0; i < plan.length - 1; i++) {
+      const currentItem = plan[i];
+      const nextItem = plan[i + 1];
+      
+      if (!currentItem.end?.datetime || !nextItem.start?.datetime) {
+        return {
+          valid: false,
+          message: 'กรุณาเลือกวันที่ให้ครบ'
+        }
+      }
+
+      // ดึง timezone จากข้อมูล (ถ้าไม่มีใช้ fallbackTimezone)
+      const currentTimezone = currentItem.start.timezone;
+      const nextTimezone = nextItem.start.timezone;
+
+      // แปลงเวลาเป็น local time ใน timezone ของตัวเองก่อน
+      const currentStartLocal = utcToZonedTime(new Date(currentItem.end.datetime), currentTimezone);
+      const nextStartLocal = utcToZonedTime(new Date(nextItem.start.datetime), nextTimezone);
+
+      // แปลง local time เป็น timestamp สำหรับเปรียบเทียบ
+      const currentStartTime = currentStartLocal.getTime();
+      const nextStartTime = nextStartLocal.getTime();
+
+      if (nextStartTime < currentStartTime) {
+        // แปลงเวลาเพื่อแสดงในข้อความแจ้งเตือน
+        const currentStartStr = format(currentStartLocal, 'dd/MM/yyyy HH:mm', { timeZone: currentTimezone });
+        const nextStartStr = format(nextStartLocal, 'dd/MM/yyyy HH:mm', { timeZone: nextTimezone });
+        
+        return {
+          valid: false,
+          errorIndex: i,
+          message: `เวลาไม่ต่อเนื่องกัน: 
+            รายการที่ ${i + 1} จบที่ ${currentStartStr} (${currentTimezone}) 
+            แต่รายการที่ ${i + 2} เริ่มที่ ${nextStartStr} (${nextTimezone})`
+        };
+      }
+    }
+    return { valid: true };
+  };
+
+  const handleSavePlan = async () => {
+    setLoadingPlan(true);
+    try {
+      updateEndTimes();
+      updateLocation();
+
+      // const validation = validateTimeSequence(plan);
+      // if (!validation.valid) {
+      //   showErrorToast(validation.message);
+      //   return;
+      // }
+      
+
+      const response = await axios.put(`/api/trip/${userId}/${id_trip}/plan`, plan);
+      setPlan(response.data.plan);
+
+      showSuccessToast("อัปเดตแผนสำเร็จ");
+
+      updateLocationMap();
+    }  catch (err) {
+      showErrorToast("อัปเดตแผนล้มเหลว");
+      console.error("Error updating plan:", err);
+    } finally {
+      setLoadingPlan(false); 
+    }
+  };
+
 
   console.log(plan)
   if (!userId || loadingTrips) return <Loading />;
@@ -587,90 +673,90 @@ const addTransportSection = () => {
                     <div className="row gx-3 gy-2 align-items-center">
                       <div className="col-md-auto">
                         <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "public_transport" ? 'active bg-black' : ''}`}>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.data.transport_type === "public_transport" ? 'active bg-black' : ''}`}>
                             <input
                               type="radio"
                               name={`type-${index}`} // เปลี่ยนให้ unique
                               value="public_transport"
-                              checked={item.transport_type === "public_transport"}
+                              checked={item.data.transport_type === "public_transport"}
                               onChange={() => {
                                 const newPlan = [...plan];
-                                newPlan[index].transport_type = "public_transport";
+                                newPlan[index].data.transport_type = "public_transport";
                                 setPlan(newPlan);
                               }}
                               style={{ display: 'none' }}
                             />
                             <Bus size={18} />
                           </label>
-                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "car" ? 'active bg-black' : ''}`}>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.data.transport_type === "car" ? 'active bg-black' : ''}`}>
                             <input
                               type="radio"
                               name={`type-${index}`} // เปลี่ยนให้ unique
                               value="public_transport"
-                              checked={item.transport_type === "car"}
+                              checked={item.data.transport_type === "car"}
                               onChange={() => {
                                 const newPlan = [...plan];
-                                newPlan[index].transport_type = "car";
+                                newPlan[index].data.transport_type = "car";
                                 setPlan(newPlan);
                               }}
                               style={{ display: 'none' }}
                             />
                             <CarFront size={18} />
                           </label>
-                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "plane" ? 'active bg-black' : ''}`}>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.data.transport_type === "plane" ? 'active bg-black' : ''}`}>
                             <input
                               type="radio"
                               name={`type-${index}`} // เปลี่ยนให้ unique
                               value="public_transport"
-                              checked={item.transport_type === "plane"}
+                              checked={item.data.transport_type === "plane"}
                               onChange={() => {
                                 const newPlan = [...plan];
-                                newPlan[index].transport_type = "plane";
+                                newPlan[index].data.transport_type = "plane";
                                 setPlan(newPlan);
                               }}
                               style={{ display: 'none' }}
                             />
                             <Plane size={18} />
                           </label>
-                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "train" ? 'active bg-black' : ''}`}>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.data.transport_type === "train" ? 'active bg-black' : ''}`}>
                             <input
                               type="radio"
                               name={`type-${index}`} // เปลี่ยนให้ unique
                               value="public_transport"
-                              checked={item.transport_type === "train"}
+                              checked={item.data.transport_type === "train"}
                               onChange={() => {
                                 const newPlan = [...plan];
-                                newPlan[index].transport_type = "train";
+                                newPlan[index].data.transport_type = "train";
                                 setPlan(newPlan);
                               }}
                               style={{ display: 'none' }}
                             />
                             <TrainFront size={18} />
                           </label>
-                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "walking" ? 'active bg-black' : ''}`}>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.data.transport_type === "walking" ? 'active bg-black' : ''}`}>
                             <input
                               type="radio"
                               name={`type-${index}`} // เปลี่ยนให้ unique
                               value="public_transport"
-                              checked={item.transport_type === "walking"}
+                              checked={item.data.transport_type === "walking"}
                               onChange={() => {
                                 const newPlan = [...plan];
-                                newPlan[index].transport_type = "walking";
+                                newPlan[index].data.transport_type = "walking";
                                 setPlan(newPlan);
                               }}
                               style={{ display: 'none' }}
                             />
                             <Footprints size={18} />
                           </label>
-                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.transport_type === "bicycle" ? 'active bg-black' : ''}`}>
+                          <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${item.data.transport_type === "bicycle" ? 'active bg-black' : ''}`}>
                             <input
                               type="radio"
                               name={`type-${index}`} // เปลี่ยนให้ unique
                               value="public_transport"
-                              checked={item.transport_type === "bicycle"}
+                              checked={item.data.transport_type === "bicycle"}
                               onChange={() => {
                                 const newPlan = [...plan];
-                                newPlan[index].transport_type = "bicycle";
+                                newPlan[index].data.transport_type = "bicycle";
                                 setPlan(newPlan);
                               }}
                               style={{ display: 'none' }}
@@ -864,11 +950,30 @@ const addTransportSection = () => {
             </div>
           </div>
 
+          <button
+            type="submit"
+            className="btn custom-dark-hover w-100 d-flex align-items-center justify-content-center p-2"
+            disabled={loadingPlan}
+            onClick={handleSavePlan}
+          >
+            {loadingPlan ? (
+              <>
+                <div className="spinner-border spinner-border-sm me-2" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                กำลังบันทึก...
+              </>
+            ) : (
+              "Save Plan"
+            )}
+          </button>
+
+
         </div>
 
         {/* right */}
         <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column pt-3">
-          {/* <MapMultiMarker locations={locationList} /> */}
+          <MapMultiMarker locations={locationList} />
         </div>
       </div>
 

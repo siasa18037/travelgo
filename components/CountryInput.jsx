@@ -2,19 +2,29 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import {Earth , Plus} from 'lucide-react'
+import { getNames } from "country-list";
 export default function CountryInput({ value = [], onChange }) {
   const [input, setInput] = useState("");
   const [countries, setCountries] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [selected, setSelected] = useState(value); // 👈 initial from props
 
+  // useEffect(() => {
+  //   axios.get("https://restcountries.com/v3.1/all")
+  //     .then(res => {
+  //       const names = res.data.map(c => c.name.common).sort();
+  //       setCountries(names);
+  //     })
+  //     .catch(() => showErrorToast("โหลดชื่อประเทศไม่สำเร็จ"));
+  // }, []);
+
   useEffect(() => {
-    axios.get("https://restcountries.com/v3.1/all")
-      .then(res => {
-        const names = res.data.map(c => c.name.common).sort();
-        setCountries(names);
-      })
-      .catch(() => showErrorToast("โหลดชื่อประเทศไม่สำเร็จ"));
+    try {
+      const names = getNames().sort();
+      setCountries(names);
+    } catch {
+      showErrorToast("โหลดชื่อประเทศไม่สำเร็จ");
+    }
   }, []);
 
   // 👇 Sync props.value to internal state when it changes

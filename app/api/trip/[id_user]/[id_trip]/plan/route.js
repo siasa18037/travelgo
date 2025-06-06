@@ -1,1 +1,83 @@
 // # GET, POST /trip/:id_user/:id_trip/plan
+
+import Trip from '@/models/Trip';
+import { connectDB } from '@/lib/db';
+import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
+
+// GET /api/trip/:id_user/:id_trip/plan
+export async function GET(req, { params }) {
+  const { id_user, id_trip } = await params;
+  await connectDB();
+
+  const trip = await Trip.findById(id_trip);
+  if (!trip) return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+
+  const userExists = trip.user.some(u => u.id_user === id_user);
+  if (!userExists) return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+
+  return NextResponse.json(trip.plan, { status: 200 });
+}
+
+// PUT /api/trip/:id_user/:id_trip/plan - แก้ไขหรืออัปเดต plan ทั้งหมด
+export async function PUT(req, { params }) {
+  await connectDB();
+  const { id_user, id_trip } = await params;
+  const updatedList = await req.json(); // รับ plan list ใหม่
+
+  try {
+    const trip = await Trip.findById(id_trip);
+    if (!trip) {
+      return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+    }
+
+    const userExists = trip.user.some(u => u.id_user === id_user);
+    if (!userExists) {
+      return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+    }
+
+    // สร้าง Map จาก _id ใน list ที่ส่งมา
+    const newPlanMap = new Map();
+    const newPlanList = [];
+
+    updatedList.forEach(item => {
+      // ถ้าไม่มี _id แสดงว่าเป็น item ใหม่
+      if (!item._id) {
+        item._id = new mongoose.Types.ObjectId(); // สร้าง id ใหม่
+      }
+      newPlanMap.set(item._id.toString(), item);
+    });
+
+    // สร้างแผนใหม่จากรายการเดิมที่ยังอยู่ + รายการใหม่
+    const resultPlan = [];
+
+    for (const existing of trip.plan) {
+      const match = newPlanMap.get(existing._id.toString());
+
+      if (match) {
+        // อัปเดต field จาก match ลง existing
+        resultPlan.push({
+          ...existing.toObject(), // เก็บของเก่า
+          ...match              // ทับด้วยของใหม่
+        });
+        newPlanMap.delete(existing._id.toString()); // ลบออกจาก newMap เพื่อไม่ให้เพิ่มซ้ำ
+      }
+      // ถ้าไม่มี match → ข้ามไป (ลบออก)
+    }
+
+    // เพิ่มรายการใหม่ที่เหลือใน map
+    for (const [, newItem] of newPlanMap) {
+      resultPlan.push(newItem);
+    }
+
+    // บันทึก
+    trip.plan = resultPlan;
+    await trip.save();
+
+    return NextResponse.json({ message: 'Plan list updated successfully', plan: trip.plan }, { status: 200 });
+
+  } catch (err) {
+    console.error('Error updating plan:', err);
+    return NextResponse.json({ message: 'Error updating plan', error: err.message }, { status: 500 });
+  }
+}
