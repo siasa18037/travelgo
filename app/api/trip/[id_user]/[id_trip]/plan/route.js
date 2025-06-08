@@ -25,6 +25,8 @@ export async function PUT(req, { params }) {
   const { id_user, id_trip } = await params;
   const updatedList = await req.json(); // รับ plan list ใหม่
 
+  // console.log(updatedList)
+
   try {
     const trip = await Trip.findById(id_trip);
     if (!trip) {
@@ -69,6 +71,8 @@ export async function PUT(req, { params }) {
     for (const [, newItem] of newPlanMap) {
       resultPlan.push(newItem);
     }
+
+    console.log(resultPlan)
 
     // บันทึก
     trip.plan = resultPlan;

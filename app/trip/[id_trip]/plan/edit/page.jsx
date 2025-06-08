@@ -15,6 +15,7 @@ import MapSearch from '@/components/MapSearch'
 import { timezones } from '@/lib/timezone';
 import { zonedTimeToUtc ,utcToZonedTime } from 'date-fns-tz';
 import { getLocalDateString, getLocalTimeString } from '@/utils/dateLocal';
+import MapShare from '@/components/MapShare'
 
 
 export default function EditPlan() {
@@ -25,6 +26,9 @@ export default function EditPlan() {
   const [locationList, setLocationList] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
   const [plan, setPlan] = useState([]);
+  const [mapSharedata,setMapSharedata] = useState();
+  const [mapShareBox , setMapShareBox] = useState(false); 
+  const [mapShareType,setMapShareType] = useState();
   const [trip, setTrip] = useState({
     name: '',
     start_date: '', 
@@ -155,9 +159,9 @@ export default function EditPlan() {
             country: data.country,
             updatedAt: data.updatedAt,
           });
-          setPlan(data.plan)
+          setPlan(data.plan);
         } else {
-          showErrorToast(data.message)
+          showErrorToast(data.message);
           router.push(`/dashboard`);
           return
         }
@@ -287,44 +291,72 @@ export default function EditPlan() {
           };
         }
       }
-      
       return newPlan;
     });
   };
 
   // ฟังก์ชันupdateLocation
+  // const updateLocation = () => {
+  //   setPlan(prevPlan => {
+  //     return prevPlan.map((item, idx) => {
+  //       if (item.type === 'transport') {
+  //         // ดึงข้อมูลจากรายการก่อนหน้า (origin)
+  //         const prevItem = prevPlan[idx - 1];
+  //         const origin = prevItem?.data?.location || {
+  //           name: '',
+  //           lat: '',
+  //           lng: '',
+  //           address: ''
+  //         };
+
+  //         // ดึงข้อมูลจากรายการถัดไป (destination)
+  //         const nextItem = prevPlan[idx + 1];
+  //         const destination = nextItem?.data?.location || {
+  //           name: '',
+  //           lat: '',
+  //           lng: '',
+  //           address: ''
+  //         };
+
+  //         return {
+  //           ...item,
+  //           origin,
+  //           destination,
+  //         };
+  //       }
+  //       return item;
+  //     });
+  //   });
+
+  //   console.log('updateLocation' , plan)
+  // }
   const updateLocation = () => {
     setPlan(prevPlan => {
       return prevPlan.map((item, idx) => {
         if (item.type === 'transport') {
-          // ดึงข้อมูลจากรายการก่อนหน้า (origin)
           const prevItem = prevPlan[idx - 1];
-          const origin = prevItem?.data?.location || {
-            name: '',
-            lat: '',
-            lng: '',
-            address: ''
-          };
-
-          // ดึงข้อมูลจากรายการถัดไป (destination)
           const nextItem = prevPlan[idx + 1];
-          const destination = nextItem?.data?.location || {
-            name: '',
-            lat: '',
-            lng: '',
-            address: ''
-          };
-
+          
           return {
             ...item,
-            origin,
-            destination
+            origin: prevItem?.data?.location || {
+              name: '',
+              lat: '',
+              lng: '',
+              address: ''
+            },
+            destination: nextItem?.data?.location || {
+              name: '',
+              lat: '',
+              lng: '',
+              address: ''
+            }
           };
         }
         return item;
       });
     });
-  }
+  };
 
   // Name
   const truncateName = (name) => {
@@ -373,24 +405,51 @@ export default function EditPlan() {
 
   const handleSavePlan = async () => {
     setLoadingPlan(true);
-    try {
-      updateEndTimes();
-      updateLocation();
+    updateEndTimes();
 
-      const validation = validateTimeSequence(plan);
-      if (!validation.valid) {
-        showErrorToast(validation.message);
-        return;
+    // สร้าง plan ใหม่ที่อัปเดตแล้ว
+    const updatedPlan = [...plan];
+
+    // ตรวจสอบความถูกต้องของเวลา
+    const validation = validateTimeSequence(updatedPlan);
+    if (!validation.valid) {
+      showErrorToast(validation.message);
+      setLoadingPlan(false);
+      return;
+    }
+
+    // อัปเดต location ใน transport items
+    updatedPlan.forEach((item, idx) => {
+      if (item.type === 'transport') {
+        const prevItem = updatedPlan[idx - 1];
+        const nextItem = updatedPlan[idx + 1];
+        
+        updatedPlan[idx].origin = prevItem?.data?.location || {
+          name: '',
+          lat: '',
+          lng: '',
+          address: ''
+        };
+
+        updatedPlan[idx].destination = nextItem?.data?.location || {
+          name: '',
+          lat: '',
+          lng: '',
+          address: ''
+        };
       }
-      
+    });
 
-      const response = await axios.put(`/api/trip/${userId}/${id_trip}/plan`, plan);
+    setPlan(updatedPlan);
+
+    try {
+      console.log('sent :',updatedPlan)
+      const response = await axios.put(`/api/trip/${userId}/${id_trip}/plan`, updatedPlan);
       setPlan(response.data.plan);
-
+      console.log('res :',response.data.plan)
       showSuccessToast("อัปเดตแผนสำเร็จ");
-
       updateLocationMap();
-    }  catch (err) {
+    } catch (err) {
       showErrorToast("อัปเดตแผนล้มเหลว");
       console.error("Error updating plan:", err);
     } finally {
@@ -438,8 +497,34 @@ export default function EditPlan() {
     updateEndTimes();
   };
 
+  const ShowMapShare = (type, index) => {
+    const item = plan[index];
+    updateLocation();
+    
+    if (type === 'location') {
+      setMapSharedata({
+        name: item.data.location.name,
+        start: item.start,
+        end: item.end,
+        location: item.data.location
+      });
+    } else if (type === 'navigation') {
+      setMapSharedata({
+        name: item.name,
+        start: item.start,
+        end: item.end,
+        transport_type: item.data.transport_type,
+        origin: item.origin,
+        destination: item.destination
+      });
+    }
+    
+    setMapShareType(type);
+    setMapShareBox(true);
+  };
 
   console.log(plan)
+
   if (!userId || loadingTrips) return <Loading />;
 
   return (
@@ -708,14 +793,17 @@ export default function EditPlan() {
                         value={item.data.location} 
                       />
                   </div>
-                  <div className="card-header d-flex align-items-center justify-content-between border-0 bg-body-secondary">
+                  <div className="card-header d-flex flex-wrap flex-md-nowrap align-items-center justify-content-between gap-2 border-0 bg-body-secondary">
                     <div className="status">
                       {/* ว่างไว้ */}
                     </div>
                     <div className="left d-flex align-items-center gap-2">
-                      <Link className="btn d-flex align-items-center btn-outline-dark" href={`/trip/${id_trip}/plan/map`}>
-                        ดูตำเเหน่ง
-                      </Link>
+                      <button 
+                        className="btn d-flex align-items-center btn-outline-dark" 
+                        onClick={() => ShowMapShare('location', index)}
+                      >
+                        ดูตำแหน่ง
+                      </button>
                       <button className="btn d-flex align-items-center btn-outline-dark" >
                         ตั้งค่าเพิ่มเติม
                       </button>
@@ -986,12 +1074,12 @@ export default function EditPlan() {
                       </div>
                       {/* Buttons */}
                       <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
-                        <Link
+                        <button
                           className="btn d-flex align-items-center btn-outline-dark"
-                          href={`/trip/${id_trip}/plan/map`}
+                          onClick={() => ShowMapShare('navigation', index)}
                         >
                           ดูเส้นทาง
-                        </Link>
+                        </button>
                         <button className="btn d-flex align-items-center btn-outline-dark">
                           ตั้งค่าเพิ่มเติม
                         </button>
@@ -1072,10 +1160,23 @@ export default function EditPlan() {
 
         {/* right */}
         <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column pt-3">
-          <MapMultiMarker locations={locationList} />
+          {/* <MapMultiMarker locations={locationList} /> */}
         </div>
       </div>
 
+
+      {/* mapShareBox */}
+      {mapShareBox && (
+        <div className="modal-content">
+          <MapShare 
+            data={mapSharedata} 
+            type={mapShareType}
+            onClose={() => setMapShareBox(false)}
+          />
+        </div>
+      )}
+
     </main> 
+
   );
 } 
