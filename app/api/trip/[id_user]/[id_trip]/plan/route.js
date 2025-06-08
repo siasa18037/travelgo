@@ -72,7 +72,7 @@ export async function PUT(req, { params }) {
       resultPlan.push(newItem);
     }
 
-    console.log(resultPlan)
+    // console.log(resultPlan)
 
     // บันทึก
     trip.plan = resultPlan;

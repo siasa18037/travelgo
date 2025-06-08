@@ -248,21 +248,21 @@ export default function EditPlan() {
       name: '',
       data:{
         transport_type: 'public_transport',
+        origin: {
+          name: '',
+          lat: '',
+          lng: '',
+          address: ''
+        },
+        destination: {
+          name: '',
+          lat: '',
+          lng: '',
+          address: ''
+        }
       },
       start: startDate,
       end: { datetime: '', timezone: '' },
-      origin: {
-        name: '',
-        lat: '',
-        lng: '',
-        address: ''
-      },
-      destination: {
-        name: '',
-        lat: '',
-        lng: '',
-        address: ''
-      }
     }
   ]);
   updateLocation();
@@ -295,41 +295,7 @@ export default function EditPlan() {
     });
   };
 
-  // ฟังก์ชันupdateLocation
-  // const updateLocation = () => {
-  //   setPlan(prevPlan => {
-  //     return prevPlan.map((item, idx) => {
-  //       if (item.type === 'transport') {
-  //         // ดึงข้อมูลจากรายการก่อนหน้า (origin)
-  //         const prevItem = prevPlan[idx - 1];
-  //         const origin = prevItem?.data?.location || {
-  //           name: '',
-  //           lat: '',
-  //           lng: '',
-  //           address: ''
-  //         };
-
-  //         // ดึงข้อมูลจากรายการถัดไป (destination)
-  //         const nextItem = prevPlan[idx + 1];
-  //         const destination = nextItem?.data?.location || {
-  //           name: '',
-  //           lat: '',
-  //           lng: '',
-  //           address: ''
-  //         };
-
-  //         return {
-  //           ...item,
-  //           origin,
-  //           destination,
-  //         };
-  //       }
-  //       return item;
-  //     });
-  //   });
-
-  //   console.log('updateLocation' , plan)
-  // }
+// ในฟังก์ชัน updateLocation ต้องแก้ให้อัปเดตใน data แทน
   const updateLocation = () => {
     setPlan(prevPlan => {
       return prevPlan.map((item, idx) => {
@@ -339,17 +305,20 @@ export default function EditPlan() {
           
           return {
             ...item,
-            origin: prevItem?.data?.location || {
-              name: '',
-              lat: '',
-              lng: '',
-              address: ''
-            },
-            destination: nextItem?.data?.location || {
-              name: '',
-              lat: '',
-              lng: '',
-              address: ''
+            data: {
+              ...item.data,
+              origin: prevItem?.data?.location || {
+                name: '',
+                lat: '',
+                lng: '',
+                address: ''
+              },
+              destination: nextItem?.data?.location || {
+                name: '',
+                lat: '',
+                lng: '',
+                address: ''
+              }
             }
           };
         }
@@ -424,14 +393,14 @@ export default function EditPlan() {
         const prevItem = updatedPlan[idx - 1];
         const nextItem = updatedPlan[idx + 1];
         
-        updatedPlan[idx].origin = prevItem?.data?.location || {
+        updatedPlan[idx].data.origin = prevItem?.data?.location || {
           name: '',
           lat: '',
           lng: '',
           address: ''
         };
 
-        updatedPlan[idx].destination = nextItem?.data?.location || {
+        updatedPlan[idx].data.destination = nextItem?.data?.location || {
           name: '',
           lat: '',
           lng: '',
@@ -514,8 +483,8 @@ export default function EditPlan() {
         start: item.start,
         end: item.end,
         transport_type: item.data.transport_type,
-        origin: item.origin,
-        destination: item.destination
+        origin: item.data.origin,
+        destination: item.data.destination
       });
     }
     
