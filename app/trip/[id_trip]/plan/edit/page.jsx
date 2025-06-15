@@ -487,9 +487,28 @@ export default function EditPlan() {
         destination: item.data.destination
       });
     }
-    
     setMapShareType(type);
     setMapShareBox(true);
+  };
+
+  const seemore = async (index) => {
+    try {
+      setLoadingPlan(true);
+      
+      // บันทึกแผนก่อน
+      await handleSavePlan();
+      
+      // หลังจากบันทึกแล้ว ค่า plan จะมี _id สำหรับแต่ละรายการ
+      const planId = plan[index]._id;
+      
+      // นำทางไปยังหน้าแก้ไขรายการนั้น
+      router.push(`/trip/${id_trip}/plan/${planId}/edit`);
+    } catch (error) {
+      showErrorToast("เกิดข้อผิดพลาดในการเปิดหน้าแก้ไข");
+      console.error(error);
+    } finally {
+      setLoadingPlan(false);
+    } 
   };
 
   console.log(plan)
@@ -773,8 +792,11 @@ export default function EditPlan() {
                       >
                         ดูตำแหน่ง
                       </button>
-                      <button className="btn d-flex align-items-center btn-outline-dark" >
-                        ตั้งค่าเพิ่มเติม
+                      <button 
+                          className="btn d-flex align-items-center btn-outline-dark" 
+                          onClick={() => seemore(index)}
+                        >
+                          ตั้งค่าเพิ่มเติม
                       </button>
                       <button 
                         className="btn d-flex align-items-center btn-danger" 
@@ -1049,7 +1071,10 @@ export default function EditPlan() {
                         >
                           ดูเส้นทาง
                         </button>
-                        <button className="btn d-flex align-items-center btn-outline-dark">
+                        <button 
+                          className="btn d-flex align-items-center btn-outline-dark" 
+                          onClick={() => seemore(index)}
+                        >
                           ตั้งค่าเพิ่มเติม
                         </button>
                         <button 

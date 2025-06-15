@@ -73,8 +73,8 @@ export default function MapSearch({ SelectLocation , value }) {
 
   return (
     <>
-      <div className="input d-flex justify-content-between align-items-center gap-2">
-        <div className="btn-group btn-group-toggle mb-2" data-toggle="buttons">
+      <div className="input d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div className="btn-group btn-group-toggle" data-toggle="buttons">
           <label
             className={`btn btn-secondary input-outline-dark d-flex align-items-center ${
               selectedMode === "google" ? "active bg-black" : ""
@@ -86,7 +86,7 @@ export default function MapSearch({ SelectLocation , value }) {
           >
             <input type="radio" name="options" style={{ display: "none" }} />
             <Map className="me-2" size={18} />
-            Google map
+            Google Map
           </label>
           <label
             className={`btn btn-secondary input-outline-dark d-flex align-items-center ${
@@ -99,16 +99,20 @@ export default function MapSearch({ SelectLocation , value }) {
           >
             <input type="radio" name="options" style={{ display: "none" }} />
             <Search className="me-2" size={18} />
-            Search map
+            Search Map
           </label>
         </div>
+
         {location && (
-        <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center flex-grow-1 input-outline-dark" style={{ minWidth: "150px" }}>
             <MapPin className="me-1" size={18} />
-            <p className="mb-0"> <strong>{location.name}</strong></p>
-        </div>
+            <p className="mb-0 text-truncate">
+              <strong>{location.name}</strong>
+            </p>
+          </div>
         )}
       </div>
+
 
       {/* Google Map Link Input */}
       {selectedMode === "google" && (

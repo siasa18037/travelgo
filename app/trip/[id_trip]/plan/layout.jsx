@@ -12,46 +12,58 @@ export default function PlanLayout({ children }) {
   const params = useParams();
   const pathname = usePathname();
 
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
-
   const generateBreadcrumbs = () => {
-    const paths = pathname.split('/').filter(path => path);
-    const breadcrumbs = [];
-    
+  const breadcrumbs = [];
+
+  // เริ่มจาก Trip Name
     breadcrumbs.push(
-      <Link key="trip" href={`/trip/${id_trip}`} className="text-black" style={{ textDecoration: 'none' }}>
+      <Link
+        key="trip"
+        href={`/trip/${id_trip}`}
+        className="text-black"
+        style={{ textDecoration: 'none' }}
+      >
         {nameTrip}
       </Link>
     );
 
-    let accumulatedPath = `/trip/${id_trip}`;
-    for (let i = 2; i < paths.length; i++) {
-      accumulatedPath += `/${paths[i]}`;
+    // เพิ่ม > plan
+    if (pathname.includes(`/trip/${id_trip}/plan`)) {
+      breadcrumbs.push(<span key="sep1" className="mx-2">&gt;</span>);
       breadcrumbs.push(
-        <span key={`separator-${i}`} className="mx-2">&gt;</span>
-      );
-      breadcrumbs.push(
-        <Link 
-          key={`path-${i}`} 
-          href={accumulatedPath} 
+        <Link
+          key="plan"
+          href={`/trip/${id_trip}/plan`}
           className="text-black capitalize"
           style={{ textDecoration: 'none' }}
         >
-          {paths[i]}
+          plan
         </Link>
+      );
+    }
+
+    // ถ้า path ลงท้ายด้วย /edit ให้แสดง "edit"
+    if (pathname.endsWith('/edit')) {
+      breadcrumbs.push(<span key="sep2" className="mx-2">&gt;</span>);
+      breadcrumbs.push(
+        <span key="edit" className="text-black capitalize">
+          edit
+        </span>
       );
     }
 
     return breadcrumbs;
   };
 
+
   return (
     <>
-      <nav className='container mt-3 flex items-center'>
+      <nav className='container mt-3  items-center'>
         {generateBreadcrumbs()}
       </nav>
       {children}
     </>
+
   );
+
 }
