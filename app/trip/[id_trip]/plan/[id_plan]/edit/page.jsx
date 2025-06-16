@@ -7,11 +7,12 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
-import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2} from 'lucide-react';
+import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign} from 'lucide-react';
 import './edit.css'
 import { getLocalDateString, getLocalTimeString } from '@/utils/dateLocal';
 import MapSearch from '@/components/MapSearch'
 import ShowOriToDes from '@/components/ShowOriToDes'
+import Richtexteditor from '@/components/Richtexteditor'
 
 export default function EditPlanItem() {
   const router = useRouter();
@@ -96,7 +97,7 @@ export default function EditPlanItem() {
                   className="form-control input-outline-dark"
                   id="name"
                   name="name"
-                  value={planItemForm.name}
+                  value={planItemForm.name || ''}
                   onChange={(e) => setPlanItemForm({ ...planItemForm, name: e.target.value })}
                 />
               </div>
@@ -238,10 +239,43 @@ export default function EditPlanItem() {
                   <ShowOriToDes data={planItemForm.data} start={planItemForm.start} end={planItemForm.end}/>
                 </div>
               )}
-              
-              
-
-
+              {/* detail */}
+              <div className="mb-3">
+                <label className="form-label d-flex align-items-center">
+                  <FileText size={18} className="me-1" /> Detail
+                </label>
+                <Richtexteditor
+                  value={planItemForm.detail}
+                  onChange={(value) => setPlanItemForm(prev => ({ ...prev, detail: value }))}
+                />
+              </div>
+              {/* Price_per_person */}
+              <div className="mb-3">
+                <label className="form-label d-flex align-items-center">
+                  <CircleDollarSign size={18} className="me-1" /> Price
+                </label>
+                <div className="input-group overflow-hidden">
+                  <span className="input-group-text input-outline-dark">ราคา</span>
+                  <input 
+                    type="number" 
+                    min={0}
+                    className="form-control input-outline-dark" 
+                    value={planItemForm.amount || 0}
+                    onChange={(e) => setPlanItemForm({ ...planItemForm, amount: e.target.value })}
+                  />
+                  <span className="input-group-text input-outline-dark">บาท</span>
+                  <span className="input-group-text input-outline-dark">ต่อ</span>
+                  <input
+                    type="number"
+                    className="form-control input-outline-dark"
+                    min={1}
+                    style={{ maxWidth: '80px' }} // ปรับขนาดความกว้าง
+                    value={planItemForm.Price_per_person || 1}
+                    onChange={(e) => setPlanItemForm({ ...planItemForm, Price_per_person: e.target.value })}
+                  />
+                  <span className="input-group-text input-outline-dark">คน</span>
+                </div>
+              </div>
           </div>
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
 
