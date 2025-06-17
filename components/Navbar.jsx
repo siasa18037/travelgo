@@ -4,8 +4,9 @@ import '@/styles/navbar.css';
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { UserCircle, LogOut, LayoutDashboard, LogIn, UserPlus , Map, Ticket, Wallet2, Route ,UserRoundCheck } from "lucide-react";
+import { UserCircle, LogOut, LayoutDashboard, LogIn, UserPlus , Map, Ticket, Wallet2, Route ,UserRoundCheck ,Moon,Sun} from "lucide-react";
 import { logoutUser } from "@/utils/logout"; 
+import Cookies from 'js-cookie';
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,6 +14,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -69,10 +71,31 @@ export default function Navbar() {
   const isTripPage = !!match;
   const baseTripPath = match ? `/trip/${match[1]}` : "";
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-bs-theme', theme);
+  }, [theme]);
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-bs-theme', newTheme);
+    Cookies.set('theme', newTheme, { expires: 30 }); // เก็บ cookie ไว้ 30 วัน
+  };
+
+  // โหลดค่าธีมจาก cookie ตอนโหลดหน้า
+  useEffect(() => {
+    const savedTheme = Cookies.get('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    } else {
+      // fallback ถ้าไม่มี cookie
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    }
+  }, []);
 
   return (
-    <nav className="navbar fixed-top navbar-expand-lg navbar-light bg-light shadow-sm">
+    <nav className="navbar fixed-top navbar-expand-lg bg-body-tertiary shadow-sm">
       <div className="container">
         <Link href="/" className="navbar-brand fw-bold">TravelGo</Link>
         <ul className="navbar-nav ms-auto align-items-center gap-2 d-flex flex-row flex-wrap">
@@ -163,6 +186,27 @@ export default function Navbar() {
                   )}
                   <li>
                     <button
+                      className="dropdown-item d-flex align-items-center gap-2 "
+                      onClick={toggleTheme}
+                    >
+                      {theme === 'light' ? (
+                        <>
+                          <Moon size={18}/>
+                          <label>Dark mode</label>
+                        </>
+                        
+                      )  : (
+                        <>
+                          <Sun size={18}/>
+                          <label>Light mode</label>
+                        </>
+                      )}
+
+                      
+                    </button>
+                  </li>
+                  <li>
+                    <button
                       className="dropdown-item d-flex align-items-center gap-2 text-danger"
                       onClick={handleLogout}
                     >
@@ -188,6 +232,22 @@ export default function Navbar() {
                   <UserPlus size={18} /> 
                   <label>Register</label>
                 </Link>
+              </li>
+              <li className="nav-item">
+                <button
+                  className="dropdown-item d-flex align-items-center "
+                  onClick={toggleTheme}
+                >
+                  {theme === 'light' ? (
+                    <>
+                      <Moon size={18}/>
+                    </>
+                  )  : (
+                    <>
+                      <Sun size={18}/>
+                    </>
+                  )}
+                </button>
               </li>
             </>
           )}

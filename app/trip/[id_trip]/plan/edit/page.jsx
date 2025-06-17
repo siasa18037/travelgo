@@ -511,7 +511,7 @@ export default function EditPlan() {
     } 
   };
 
-  console.log(plan)
+  // console.log(plan)
 
   if (!userId || loadingTrips) return <Loading />;
 

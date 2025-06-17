@@ -111,13 +111,7 @@ export default function CountryInput({ value = [], onChange }) {
         {selected.map((tag, index) => (
           <span
             key={index}
-            className="badge d-flex align-items-center px-2 py-2 "
-            style={{
-              color: "#212529",
-              border: "1px solid #212529",
-              fontWeight: "500",
-              fontSize: "0.9rem",
-            }}
+            className="badge custom-tag d-flex align-items-center px-2 py-2"
           >
             {tag}
             <button

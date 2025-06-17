@@ -20,7 +20,7 @@ export default function PlanLayout({ children }) {
       <Link
         key="trip"
         href={`/trip/${id_trip}`}
-        className="text-black"
+        className="text-body"
         style={{ textDecoration: 'none' }}
       >
         {nameTrip}
@@ -34,7 +34,7 @@ export default function PlanLayout({ children }) {
         <Link
           key="plan"
           href={`/trip/${id_trip}/plan`}
-          className="text-black capitalize"
+          className="text-body capitalize"
           style={{ textDecoration: 'none' }}
         >
           plan
@@ -46,7 +46,7 @@ export default function PlanLayout({ children }) {
     if (pathname.endsWith('/edit')) {
       breadcrumbs.push(<span key="sep2" className="mx-2">&gt;</span>);
       breadcrumbs.push(
-        <span key="edit" className="text-black capitalize">
+        <span key="edit" className="text-body capitalize">
           edit
         </span>
       );

@@ -4,8 +4,9 @@
   top: 0;
   width: 100%;
   z-index: 1030;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  box-shadow: 0 2px 5px #0000001a;
 }
 
 /* ป้องกันเนื้อหาถูก Navbar บัง */

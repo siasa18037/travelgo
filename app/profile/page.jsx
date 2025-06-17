@@ -34,7 +34,7 @@ export default function Profile() {
           fetch(`/api/user/${data.user.userId}`)
             .then(res => res.json())
             .then(userData => {
-              console.log(userData)
+              // console.log(userData)
               if(!userData.error){
                   setForm({
                   name:userData.name,
@@ -251,7 +251,7 @@ export default function Profile() {
                 ))}
                 <button
                   type="button"
-                  className="btn btn-sm btn-outline-dark"
+                  className="btn btn-sm input-outline-dark"
                   onClick={addPhone}
                 >
                   + เพิ่มเบอร์โทร

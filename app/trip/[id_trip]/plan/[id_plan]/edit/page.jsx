@@ -138,7 +138,7 @@ export default function EditPlanItem() {
                       <Settings2 size={18} className="me-1" /> Plan Type
                     </label>
                     <div className="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${planItemForm.type === "Activities" ? 'active bg-black' : ''}`}>
+                      <label className={`btn btn-secondary input-outline-dark d-flex align-items-center ${planItemForm.type === "Activities" ? 'active bg-black' : ''}`} >
                         <input
                           type="radio"
                           value="Activities"

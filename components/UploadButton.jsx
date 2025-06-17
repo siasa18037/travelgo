@@ -57,7 +57,7 @@ export default function UploadButton({ onUploaded }) {
       />
       <button
         type="button"
-        className="btn btn-dark d-flex align-items-center justify-content-center"
+        className="btn custom-dark-hover d-flex align-items-center justify-content-center"
         onClick={handleUpload}
         disabled={loading}
         style={{ width: '42px', height: '40px'}}
