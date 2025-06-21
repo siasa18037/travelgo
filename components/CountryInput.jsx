@@ -1,27 +1,19 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
-import {Earth , Plus} from 'lucide-react'
-import { getNames } from "country-list";
+import { Earth, Plus } from "lucide-react";
+import { timezones } from "@/lib/timezone";
+
 export default function CountryInput({ value = [], onChange }) {
   const [input, setInput] = useState("");
   const [countries, setCountries] = useState([]);
   const [filtered, setFiltered] = useState([]);
-  const [selected, setSelected] = useState(value); // 👈 initial from props
-
-  // useEffect(() => {
-  //   axios.get("https://restcountries.com/v3.1/all")
-  //     .then(res => {
-  //       const names = res.data.map(c => c.name.common).sort();
-  //       setCountries(names);
-  //     })
-  //     .catch(() => showErrorToast("โหลดชื่อประเทศไม่สำเร็จ"));
-  // }, []);
+  const [selected, setSelected] = useState(value); 
 
   useEffect(() => {
     try {
-      const names = getNames().sort();
-      setCountries(names);
+      // ดึงชื่อประเทศทั้งหมดโดยไม่ซ้ำ แล้วเรียง A-Z
+      const uniqueCountries = [...new Set(timezones.map(([country]) => country))].sort();
+      setCountries(uniqueCountries);
     } catch {
       showErrorToast("โหลดชื่อประเทศไม่สำเร็จ");
     }
@@ -75,7 +67,7 @@ export default function CountryInput({ value = [], onChange }) {
   return (
     <div className="CountryInput mb-2">
       <label htmlFor="detail" className="form-label d-flex align-items-center">
-        <Earth size={18} className="me-1" /> Country 
+        <Earth size={18} className="me-1" /> Country
       </label>
       <div className="position-relative">
         <div className="input-group">
@@ -119,9 +111,7 @@ export default function CountryInput({ value = [], onChange }) {
               className="btn-close btn-sm ms-2"
               aria-label="Close"
               onClick={() => removeTag(tag)}
-              style={{
-                filter: "invert(0)"
-              }}
+              style={{ filter: "invert(0)" }}
             ></button>
           </span>
         ))}

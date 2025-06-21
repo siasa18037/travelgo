@@ -114,9 +114,9 @@ export default function Navbar() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link d-flex align-items-center gap-2" href={`${baseTripPath}/tiket`}>
+                <Link className="nav-link d-flex align-items-center gap-2" href={`${baseTripPath}/ticket`}>
                   <Ticket size={18} /> 
-                  <span>Tiket</span>
+                  <span>Ticket</span>
                 </Link>
               </li>
               <li className="nav-item">
@@ -240,11 +240,11 @@ export default function Navbar() {
                 >
                   {theme === 'light' ? (
                     <>
-                      <Moon size={18}/>
+                      <Sun size={18}/>
                     </>
                   )  : (
                     <>
-                      <Sun size={18}/>
+                      <Moon size={18}/>
                     </>
                   )}
                 </button>

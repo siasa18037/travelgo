@@ -56,6 +56,13 @@ const EatOrActivityDataSchema = new Schema({
   location: LocationSchema
 });
 
+// Price schema
+const PriceSchema = new Schema({
+  price: { type: Number},
+  currency: { type: String  }
+});
+
+
 // Plan Schema
 const PlanSchema = new Schema({
   status: {
@@ -73,7 +80,7 @@ const PlanSchema = new Schema({
   Tiket_pass: [{ type: Schema.Types.ObjectId, ref: 'TicketPass' }],
   image: [{ type: String }],
   detail: { type: String },
-  amount: { type: Number },
+  amount:  PriceSchema,
   Price_per_person: { type: Number },
   note: { type: String },
   checklist: [ChecklistSchema]
@@ -85,12 +92,14 @@ const UserTripSchema = new Schema({
   type: { type: String, enum: ['admin', 'user'], default: 'user' }
 });
 
+
 // TicketPass schema
 const TicketPassSchema = new Schema({
+  type: { type: String}, //public , private , [id_user]
   name: { type: String },
   detail: { type: String },
   booking_Tiket_pass: { type: String },
-  price: { type: Number },
+  price: PriceSchema,
   start: TimeWithZoneSchema,
   end: TimeWithZoneSchema,
   img: { type: String },

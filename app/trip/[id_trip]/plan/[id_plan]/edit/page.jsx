@@ -7,12 +7,14 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
-import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign} from 'lucide-react';
+import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign,ListChecks} from 'lucide-react';
 import './edit.css'
 import { getLocalDateString, getLocalTimeString } from '@/utils/dateLocal';
 import MapSearch from '@/components/MapSearch'
 import ShowOriToDes from '@/components/ShowOriToDes'
 import Richtexteditor from '@/components/Richtexteditor'
+import CheckList from '@/components/CheckList'
+import currencyCodes from 'currency-codes';
 
 export default function EditPlanItem() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function EditPlanItem() {
   const { userType, userId, id_trip } = useTrip();
   const [planItemForm, setPlanItemForm] = useState(null);
   const [loading, setLoading] = useState(true);
+  const currencies = currencyCodes.data; // เป็น array ทั้งหมด
 
   useEffect(() => {
     if (userType !== 'admin') {
@@ -85,6 +88,7 @@ export default function EditPlanItem() {
           </h4>
         </div>
         <div className="row gap-5 flex-column flex-md-row mt-2">
+          {/* left */}
           <div className="col">
 
               {/* Plan Name */}
@@ -260,10 +264,34 @@ export default function EditPlanItem() {
                     type="number" 
                     min={0}
                     className="form-control input-outline-dark" 
-                    value={planItemForm.amount || 0}
-                    onChange={(e) => setPlanItemForm({ ...planItemForm, amount: e.target.value })}
+                    value={planItemForm.amount?.price || 0}
+                    onChange={(e) => setPlanItemForm({
+                      ...planItemForm,
+                      amount: {
+                        ...planItemForm.amount,
+                        price: e.target.value
+                      }
+                    })}
                   />
-                  <span className="input-group-text input-outline-dark">บาท</span>
+                  <select
+                    className="form-select input-outline-dark"
+                    value={planItemForm.amount?.currency || 'THB'}
+                    onChange={(e) =>
+                      setPlanItemForm({
+                        ...planItemForm,
+                        amount: {
+                          ...planItemForm.amount,
+                          currency: e.target.value
+                        }
+                      })
+                    }
+                  >
+                    {currencyCodes.data.map(({ code, currency }) => (
+                      <option key={code} value={code}>
+                        {code} - {currency}
+                      </option>
+                    ))}
+                  </select>
                   <span className="input-group-text input-outline-dark">ต่อ</span>
                   <input
                     type="number"
@@ -276,7 +304,17 @@ export default function EditPlanItem() {
                   <span className="input-group-text input-outline-dark">คน</span>
                 </div>
               </div>
+              {/* checklist */}
+              <div  className='mb-3'>
+                <label className="form-label d-flex align-items-center">
+                  <ListChecks size={18} className="me-1" /> Check List
+                </label>
+                <CheckList mode='edit' id_user={userId} id_trip={id_trip} id_plan={id_plan}/>
+              </div>
+              
+
           </div>
+          {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
 
           </div>

@@ -10,7 +10,7 @@ export default function ShowOriToDes({data , start ,end}) {
     const [mapShareType,setMapShareType] = useState('location')
     const [navInfo, setNavInfo] = useState(null);
 
-    console.log(data)
+    // console.log(data)
 
     const transportOptions = [
         { value: "public_transport", icon: <Bus size={18} /> , name : "Public Transport" },
