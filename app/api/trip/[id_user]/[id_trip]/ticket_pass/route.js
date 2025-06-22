@@ -5,7 +5,7 @@ import { connectDB } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 
-// GET /api/trip/:id_user/:id_trip/ticket_pass?user=1
+// GET /api/trip/:id_user/:id_trip/ticket_pass
 export async function GET(req, { params }) {
   const { id_user, id_trip } = await params;
   await connectDB();
@@ -21,18 +21,35 @@ export async function GET(req, { params }) {
   }
 
   const url = new URL(req.url);
-  const mode = url.searchParams.get('user'); // ตรวจสอบค่าจาก ?user=1
+  const mode = url.searchParams.get('mode'); 
 
-  if (mode === '1') {
-    // ส่งออกเฉพาะ ticket_pass ที่ type === id_user
+  if (mode === 'onlyme') {
+    // ส่งเฉพาะ ticket_pass ที่ type === id_user
+    const filteredTickets = trip.ticket_pass.filter(tp => tp.type === id_user);
+    return NextResponse.json(filteredTickets, { status: 200 });
+
+  } else if (mode === 'all') {
+    const trips = await Trip.find({}, 'ticket_pass');
+    const publicTickets = trips
+      .flatMap(trip => trip.ticket_pass)
+      .filter(ticket => ticket.type === 'public');
+
+    const filteredTickets = trip.ticket_pass
+
+    const list = [...publicTickets, ...filteredTickets];
+    return NextResponse.json(list, { status: 200 });
+
+  } else if (mode === 'thistrip') {
     const filteredTickets = trip.ticket_pass.filter(tp =>
-      tp.type === id_user 
+      tp.type === 'public' || tp.type === 'private' || tp.type === id_user
     );
     return NextResponse.json(filteredTickets, { status: 200 });
+
   } else {
-    // ส่งทั้งหมด
+    // ส่งทั้งหมดของ trip นี้
     return NextResponse.json(trip.ticket_pass, { status: 200 });
   }
+
 }
 
 // POST /api/trip/:id_user/:id_trip/ticket_pass

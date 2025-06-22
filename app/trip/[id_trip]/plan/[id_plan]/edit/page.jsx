@@ -15,6 +15,7 @@ import ShowOriToDes from '@/components/ShowOriToDes'
 import Richtexteditor from '@/components/Richtexteditor'
 import CheckList from '@/components/CheckList'
 import currencyCodes from 'currency-codes';
+import TicketInputList from '@/components/TicketInputList'
 
 export default function EditPlanItem() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function EditPlanItem() {
   const [planItemForm, setPlanItemForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const currencies = currencyCodes.data; // เป็น array ทั้งหมด
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (userType !== 'admin') {
@@ -56,14 +58,18 @@ export default function EditPlanItem() {
   }, [userId, id_trip, id_plan]);
 
   const handleSave = async () => {
+    setIsLoading(true);
     try {
-      const respone = await axios.put(`/api/trip/${userId}/${id_trip}/plan/${id_plan}`, planItemForm);
-      setPlanItemForm(respone)
+      const response = await axios.put(`/api/trip/${userId}/${id_trip}/plan/${id_plan}`, planItemForm);
+      setPlanItemForm(response.data); // หรือ .data ถ้า backend ส่งแค่นั้น
       showSuccessToast("อัปเดตแผนสำเร็จ");
     } catch (error) {
       showErrorToast("อัปเดตแผนล้มเหลว");
+    } finally {
+      setIsLoading(false);
     }
   };
+
 
   const transportOptions = [
     { value: "public_transport", icon: <Bus size={18} /> },
@@ -253,6 +259,8 @@ export default function EditPlanItem() {
                   onChange={(value) => setPlanItemForm(prev => ({ ...prev, detail: value }))}
                 />
               </div>
+              {/* ticket */}
+              <TicketInputList  value={planItemForm?.Tiket_pass}  userId={userId}  id_trip={id_trip} onChange={(value) => setPlanItemForm(prev => ({ ...prev, Tiket_pass: value }))}/>
               {/* Price_per_person */}
               <div className="mb-3">
                 <label className="form-label d-flex align-items-center">
@@ -311,7 +319,24 @@ export default function EditPlanItem() {
                 </label>
                 <CheckList mode='edit' id_user={userId} id_trip={id_trip} id_plan={id_plan}/>
               </div>
-              
+
+              <button
+                type="button"
+                className="btn custom-dark-hover w-100 d-flex align-items-center justify-content-center p-2"
+                disabled={isLoading}
+                onClick={() => handleSave()}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="spinner-border spinner-border-sm me-2" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    Updating...
+                  </>
+                ) : (
+                  "Update plan"
+                )}
+              </button>
 
           </div>
           {/* right */}
@@ -319,7 +344,6 @@ export default function EditPlanItem() {
 
           </div>
         </div>
-        {planItemForm.name }
       </div>
     );
   }

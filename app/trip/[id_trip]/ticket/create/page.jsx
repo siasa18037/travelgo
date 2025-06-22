@@ -1,7 +1,7 @@
 'use client';
 
 import { useTrip } from '@/components/TripContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
@@ -16,7 +16,9 @@ import currencyCodes from 'currency-codes';
 
 export default function CreateTicketPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { userType, userId, id_trip } = useTrip();
+  const returnUrl = searchParams.get('returnUrl'); 
 
   const [isLoading, setIsLoading] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
@@ -93,7 +95,11 @@ export default function CreateTicketPage() {
         }
 
         showSuccessToast("Trip ticket created successfully!");
-        router.push(`/trip/${id_trip}/ticket/${id_ticket_pass}`);
+        if (returnUrl) {
+          router.push(returnUrl);
+        } else {
+          router.push(`/trip/${id_trip}/ticket/${id_ticket_pass}`);
+        }
 
     } catch (err) {
       console.error(err);

@@ -22,9 +22,9 @@ export default function TicketPage() {
       try {
         let url;
         if (mode == 'trip') {
-          url = `/api/trip/${userId}/${id_trip}/ticket_pass`;
+          url = `/api/trip/${userId}/${id_trip}/ticket_pass?mode=thistrip`;
         } else if (mode == 'me') {
-          url = `/api/trip/${userId}/${id_trip}/ticket_pass?user=1`;
+          url = `/api/trip/${userId}/${id_trip}/ticket_pass?mode=onlyme`;
         } else {
           url = `/api/ticket_pass`;
         }

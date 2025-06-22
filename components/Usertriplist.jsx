@@ -74,7 +74,7 @@ export default function UserSelectList({ value = [], onChange, userId_host }) {
                 value={input}
                 onChange={(e) => handleSearch(e.target.value)}
             />
-            <button className="btn mb-2 div-outline-white" disabled>
+            <button className="btn div-outline-white input-outline-dark d-flex align-items-center" type="button" disabled>
                 <Search size={18} />
             </button>
             </div>

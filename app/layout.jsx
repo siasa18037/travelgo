@@ -1,10 +1,13 @@
 // /app/layout.js
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Loading from "@/components/Loading";
+import { Suspense } from "react";
 
 import "@/styles/globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@/styles/richtexteditor.css"
+
 
 
 export const metadata = {
@@ -30,7 +33,9 @@ export default function RootLayout({ children }) {
       <body >
         <Navbar />
         <main style={{ minHeight: '90vh' }}>
-          {children}
+          <Suspense fallback={<Loading />}>
+            {children}
+          </Suspense>
         </main>
         <Footer />
       </body>
