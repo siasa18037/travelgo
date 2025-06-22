@@ -1,0 +1,50 @@
+.Profile .image-profile img{
+    width: 100%;
+    aspect-ratio: 1 / 1; 
+    object-fit: cover;
+    margin-bottom: 20px;
+}
+
+.input-outline-dark {
+  background-color: transparent;
+  border: 1px solid var(--bs-emphasis-color); /* ปรับตามธีม */
+  color: var(--bs-emphasis-color);
+  border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.input-outline-dark:focus {
+  border-color: var(--bs-body-color);
+  box-shadow: 0 0 0 0.25rem rgba(52, 58, 64, 0.25); /* ตรงนี้ใช้ rgba fix ได้อยู่ */
+  outline: none;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+
+.custom-dark-hover {
+  background-color: var(--bs-emphasis-color);
+  color: var(--bs-body-bg);
+  border: 1px solid var(--bs-emphasis-color);
+  transition: all 0.3s ease;
+}
+
+.custom-dark-hover:hover {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-emphasis-color);
+  border: 1px solid var(--bs-emphasis-color);
+}
+
+.div-outline-white {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-body-color);
+}
+
+.div-outline-white:hover {
+  background-color: var(--bs-body-bg);   /* พื้นหลังตามธีม */
+  color: var(--bs-body-color);           /* ตัวอักษรตามธีม */
+}
+
+
