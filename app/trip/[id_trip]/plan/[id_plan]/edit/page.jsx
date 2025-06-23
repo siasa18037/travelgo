@@ -2,7 +2,7 @@
 
 import { useTrip } from '@/components/TripContext';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
@@ -16,6 +16,7 @@ import Richtexteditor from '@/components/Richtexteditor'
 import CheckList from '@/components/CheckList'
 import currencyCodes from 'currency-codes';
 import TicketInputList from '@/components/TicketInputList'
+import MapMultiMarker from '@/components/MapMultiMarker'
 
 export default function EditPlanItem() {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function EditPlanItem() {
   const [loading, setLoading] = useState(true);
   const currencies = currencyCodes.data; // เป็น array ทั้งหมด
   const [isLoading, setIsLoading] = useState(false);
+  const [locationlist , setLocationlist] = useState([]);
+  const mapInitialized = useRef(false);
 
   useEffect(() => {
     if (userType !== 'admin') {
@@ -55,7 +58,7 @@ export default function EditPlanItem() {
     };
 
     fetchPlanItem();
-  }, [userId, id_trip, id_plan]);
+  }, [userId, id_trip, id_plan, router, userType]);
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -70,6 +73,40 @@ export default function EditPlanItem() {
     }
   };
 
+  useEffect(() => {
+      if (planItemForm && !mapInitialized.current) { 
+        let list = [];
+        if (planItemForm.type === 'transport') {
+          list = [
+            {
+              location_name: planItemForm.data?.origin?.name || '',
+              lat: planItemForm.data?.origin?.lat || '',
+              lng: planItemForm.data?.origin?.lng || '',
+              address: planItemForm.data?.origin?.address || '',
+            },
+            {
+              location_name: planItemForm.data?.destination?.name || '',
+              lat: planItemForm.data?.destination?.lat || '',
+              lng: planItemForm.data?.destination?.lng || '',
+              address: planItemForm.data?.destination?.address || '',
+            },
+          ];
+        } else {
+          list = [
+            {
+              location_name: planItemForm.data?.location?.name || '',
+              lat: planItemForm.data?.location?.lat || '',
+              lng: planItemForm.data?.location?.lng || '',
+              address: planItemForm.data?.location?.address || '',
+            },
+          ];
+        }
+        
+        setLocationlist(list);
+
+        mapInitialized.current = true;
+      }
+    }, [planItemForm]);
 
   const transportOptions = [
     { value: "public_transport", icon: <Bus size={18} /> },
@@ -737,7 +774,10 @@ export default function EditPlanItem() {
           </div>
           {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
-                
+              <MapMultiMarker 
+                locations={locationlist} 
+                mode={planItemForm.type == 'transport' ? 'navigation' : 'markers'} 
+              />
           </div>
         </div>
       </div>
