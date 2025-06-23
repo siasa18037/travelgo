@@ -7,7 +7,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
-import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign,ListChecks} from 'lucide-react';
+import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign,ListChecks,CalendarCheck,Luggage} from 'lucide-react';
 import './edit.css'
 import { getLocalDateString, getLocalTimeString } from '@/utils/dateLocal';
 import MapSearch from '@/components/MapSearch'
@@ -259,6 +259,403 @@ export default function EditPlanItem() {
                   onChange={(value) => setPlanItemForm(prev => ({ ...prev, detail: value }))}
                 />
               </div>
+              {/* Activities and Eat */}
+              { (planItemForm.type == 'Activities' || planItemForm.type == 'eat') && (
+                  <div className="mb-3">
+                    <label className="form-label d-flex align-items-center">
+                      <CalendarCheck size={18} className="me-1" /> Booking
+                    </label>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Name</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_name || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_name: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">From</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_from || ''}
+                        placeholder='Trip.com ..'
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_from: e.target.value
+                          }
+                        })}
+                      />
+                      <span className="input-group-text input-outline-dark">Booking date</span>
+                      <input 
+                        type="date" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_date || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_date: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Booking ID</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_ID || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_ID: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden">
+                      <span className="input-group-text input-outline-dark">Note</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_note || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_note: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                </div>
+              )}
+              {/* hotel */}
+              { (planItemForm.type == 'hotel') && (
+                  <div className="mb-3">
+                    <label className="form-label d-flex align-items-center">
+                      <CalendarCheck size={18} className="me-1" /> Booking
+                    </label>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Name</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_name || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_name: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">From</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_from || ''}
+                        placeholder='Trip.com ..'
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_from: e.target.value
+                          }
+                        })}
+                      />
+                      <span className="input-group-text input-outline-dark">Booking date</span>
+                      <input 
+                        type="date" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_date || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_date: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Booking ID</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_ID || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_ID: e.target.value
+                          }
+                        })}
+                      />
+                      <span className="input-group-text input-outline-dark">Pin</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_Pin || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_Pin: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Room</span>
+                      <input 
+                        type="number" 
+                        placeholder='1 ห้อง'
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_room || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_room: e.target.value
+                          }
+                        })}
+                      />
+                      <span className="input-group-text input-outline-dark">Night</span>
+                      <input 
+                        type="number" 
+                        placeholder='1 คืน'
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_night || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_night: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden">
+                      <span className="input-group-text input-outline-dark">Note</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_note || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_note: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                </div>
+              )}
+              {/* transport */}
+              { (planItemForm.type == 'transport') && (
+                  <div className="mb-3">
+                    <label className="form-label d-flex align-items-center">
+                      <CalendarCheck size={18} className="me-1" /> Booking
+                    </label>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Name</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_name || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_name: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">From</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_from || ''}
+                        placeholder='Trip.com ..'
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_from: e.target.value
+                          }
+                        })}
+                      />
+                      <span className="input-group-text input-outline-dark">Booking date</span>
+                      <input 
+                        type="date" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_date || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_date: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                    <div className="input-group overflow-hidden mb-2">
+                      <span className="input-group-text input-outline-dark">Booking ID</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_ID || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_ID: e.target.value
+                          }
+                        })}
+                      />
+                      <span className="input-group-text input-outline-dark">Pin</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_Pin || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_Pin: e.target.value
+                          }
+                        })}
+                      />
+                    </div>  
+                    {(planItemForm.data.transport_type == 'public_transport' || planItemForm.data.transport_type == 'train') && (
+                      <div className="input-group overflow-hidden mb-2">
+                        <span className="input-group-text input-outline-dark">Route</span>
+                        <input 
+                          type="text" 
+                          className="form-control input-outline-dark" 
+                          value={planItemForm.data?.booking_route || ''}
+                          onChange={(e) => setPlanItemForm({
+                            ...planItemForm,
+                            data: {
+                              ...planItemForm.data,
+                              booking_route: e.target.value
+                            }
+                          })}
+                        />
+                        <span className="input-group-text input-outline-dark">Car no.</span>
+                        <input 
+                          type="text" 
+                          className="form-control input-outline-dark" 
+                          value={planItemForm.data?.booking_carno || ''}
+                          onChange={(e) => setPlanItemForm({
+                            ...planItemForm,
+                            data: {
+                              ...planItemForm.data,
+                              booking_carno: e.target.value
+                            }
+                          })}
+                        />
+                      </div> 
+                    )}
+                    {(planItemForm.data.transport_type == 'plane') && (
+                      <>
+                        <div className="input-group overflow-hidden mb-2">
+                          <span className="input-group-text input-outline-dark">Flight no.</span>
+                          <input 
+                            type="text" 
+                            className="form-control input-outline-dark" 
+                            value={planItemForm.data?.booking_flightno || ''}
+                            onChange={(e) => setPlanItemForm({
+                              ...planItemForm,
+                              data: {
+                                ...planItemForm.data,
+                                booking_flightno: e.target.value
+                              }
+                            })}
+                          />
+                          <span className="input-group-text input-outline-dark">PNR</span>
+                          <input 
+                            type="text" 
+                            className="form-control input-outline-dark" 
+                            value={planItemForm.data?.booking_PNR || ''}
+                            onChange={(e) => setPlanItemForm({
+                              ...planItemForm,
+                              data: {
+                                ...planItemForm.data,
+                                booking_PNR: e.target.value
+                              }
+                            })}
+                          />
+                        </div>
+                        <div className="input-group overflow-hidden mb-2">
+                          <span className="input-group-text input-outline-dark">Airline</span>
+                          <input 
+                            type="text" 
+                            className="form-control input-outline-dark" 
+                            value={planItemForm.data?.booking_airline || ''}
+                            onChange={(e) => setPlanItemForm({
+                              ...planItemForm,
+                              data: {
+                                ...planItemForm.data,
+                                booking_airline: e.target.value
+                              }
+                            })}
+                          />
+                          <span className="input-group-text input-outline-dark">
+                            <Luggage size={18}/>
+                          </span>
+                          <input 
+                            type="text" 
+                            className="form-control input-outline-dark" 
+                            value={planItemForm.data?.booking_baggage || ''}
+                            onChange={(e) => setPlanItemForm({
+                              ...planItemForm,
+                              data: {
+                                ...planItemForm.data,
+                                booking_baggage: e.target.value
+                              }
+                            })}
+                          />
+                          <span className="input-group-text input-outline-dark">
+                            Kg.
+                          </span>
+                        </div>  
+                      </>
+                    )}
+                    <div className="input-group overflow-hidden">
+                      <span className="input-group-text input-outline-dark">Note</span>
+                      <input 
+                        type="text" 
+                        className="form-control input-outline-dark" 
+                        value={planItemForm.data?.booking_note || ''}
+                        onChange={(e) => setPlanItemForm({
+                          ...planItemForm,
+                          data: {
+                            ...planItemForm.data,
+                            booking_note: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                </div>
+              )}
               {/* ticket */}
               <TicketInputList  value={planItemForm?.Tiket_pass}  userId={userId}  id_trip={id_trip} onChange={(value) => setPlanItemForm(prev => ({ ...prev, Tiket_pass: value }))}/>
               {/* Price_per_person */}
@@ -319,7 +716,6 @@ export default function EditPlanItem() {
                 </label>
                 <CheckList mode='edit' id_user={userId} id_trip={id_trip} id_plan={id_plan}/>
               </div>
-
               <button
                 type="button"
                 className="btn custom-dark-hover w-100 d-flex align-items-center justify-content-center p-2"
@@ -341,7 +737,7 @@ export default function EditPlanItem() {
           </div>
           {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
-
+                
           </div>
         </div>
       </div>

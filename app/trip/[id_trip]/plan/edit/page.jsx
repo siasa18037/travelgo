@@ -1154,7 +1154,7 @@ export default function EditPlan() {
 
         {/* right */}
         <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column pt-3">
-          {/* <MapMultiMarker locations={locationList} /> */}
+          <MapMultiMarker locations={locationList} />
         </div>
       </div>
 

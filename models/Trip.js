@@ -23,14 +23,15 @@ const LocationSchema = new Schema({
 
 // Plan Data Types
 const HotelDataSchema = new Schema({
-  name: String,
-  name_hotel: String,
-  start: TimeWithZoneSchema,
-  end: TimeWithZoneSchema,
-  location_name: String,
-  location_detail: String,
   location: LocationSchema,
-  hotel_booking_detail: String
+  booking_name : String,
+  booking_ID : String,
+  booking_Pin : String,
+  booking_date : String,
+  booking_from : String,
+  booking_night : String,
+  booking_room : String,
+  booking_note : String,
 });
 
 const TransportDataSchema = new Schema({
@@ -39,21 +40,17 @@ const TransportDataSchema = new Schema({
     type: String,
     enum: ['public_transport','car', 'plane', 'train', 'walking', 'bicycle']
   },
-  transport_name: String,
-  start: TimeWithZoneSchema,
-  end: TimeWithZoneSchema,
   origin: LocationSchema,
   destination: LocationSchema,
-  transport_booking_detail: String
 });
 
 const EatOrActivityDataSchema = new Schema({
-  name: String,
-  start: TimeWithZoneSchema,
-  end: TimeWithZoneSchema,
-  location_name: String,
-  location_detail: String,
-  location: LocationSchema
+  location: LocationSchema,
+  booking_name : String,
+  booking_ID : String,
+  booking_date : String,
+  booking_from : String,
+  booking_note : String,
 });
 
 // Price schema
