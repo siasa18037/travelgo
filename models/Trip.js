@@ -105,11 +105,17 @@ const TicketPassSchema = new Schema({
 
 // WalletTransaction schema
 const WalletTransactionSchema = new Schema({
+  type: { 
+    type: String, 
+    enum: ['expense','loan'], // expense ใช้จ่าย (ไม่ต้องมี to) , loan ยืม/กู้ (ต้องมี to)
+    required: true 
+  },
+  description: { type: String, required: true },
   plan_id: { type: Schema.Types.ObjectId },
   time: { type: Date, default: Date.now },
-  amount: { type: Number },
-  from: { type: Schema.Types.ObjectId, ref: 'User' },
-  to: { type: Schema.Types.ObjectId, ref: 'User' },
+  amount: PriceSchema,
+  user_from: { type: Schema.Types.ObjectId, ref: 'User' },
+  user_to: { type: Schema.Types.ObjectId, ref: 'User' },
   isPaid: { type: Boolean, default: false },
   note: { type: String }
 }, { timestamps: true });

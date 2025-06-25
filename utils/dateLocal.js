@@ -63,3 +63,35 @@ export function getDurationString(start, end, fallbackTimezone) {
     if (minutes === 0) return `${hours} ชั่วโมง`;
     return `${hours} ชั่วโมง ${minutes} นาที`;
     }
+
+// คืนสถานะเวลา: "ontime" หรือ "delay (x ชั่วโมง y นาที)"
+export function getStatusTimeString(start, fallbackTimezone) {
+  if (!start?.datetime) return '';
+
+  const tzStart = start.timezone || fallbackTimezone;
+
+  // 1. แปลง start.datetime (UTC) ไปเป็นเวลาท้องถิ่นของมันเอง (tzStart)
+  const startDate = utcToZonedTime(new Date(start.datetime), tzStart);
+
+  // 2. เอาเวลาปัจจุบันใน local timezone ของ client
+  const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || fallbackTimezone;
+  const nowDate = utcToZonedTime(new Date(), clientTimezone);
+
+  // 3. เปรียบเทียบว่าเลยเวลาหรือยัง
+  if (nowDate <= startDate) {
+    return {type : 'On time'};
+  }
+
+  // 4. คำนวณเวลาที่ล่าช้า
+  const totalMinutes = differenceInMinutes(nowDate, startDate);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) return {type : 'Delay' , time:  `${minutes} นาที` } 
+  if (minutes === 0) return {type : 'Delay' , time:  `${hours} ชั่วโมง` }
+  return {type : 'Delay' , time:  `${hours} ชั่วโมง ${minutes} นาที` } 
+
+  // if (hours === 0) return `delay` , `${minutes} นาที`;
+  // if (minutes === 0) return `delay` , `${hours} ชั่วโมง`;
+  // return `delay` , `${hours} ชั่วโมง ${minutes} นาที`;
+}

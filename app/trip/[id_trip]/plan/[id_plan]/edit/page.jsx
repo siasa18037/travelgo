@@ -7,7 +7,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
-import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign,ListChecks,CalendarCheck,Luggage} from 'lucide-react';
+import { Route ,Map,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,PencilLine,Clock3,Settings2,FileText,CircleDollarSign,ListChecks,CalendarCheck,Luggage,WalletMinimal} from 'lucide-react';
 import './edit.css'
 import { getLocalDateString, getLocalTimeString } from '@/utils/dateLocal';
 import MapSearch from '@/components/MapSearch'
@@ -17,6 +17,8 @@ import CheckList from '@/components/CheckList'
 import currencyCodes from 'currency-codes';
 import TicketInputList from '@/components/TicketInputList'
 import MapMultiMarker from '@/components/MapMultiMarker'
+import Link from 'next/link';
+import StatusPlan from '@/components/StatusPlan';
 
 export default function EditPlanItem() {
   const router = useRouter();
@@ -774,10 +776,37 @@ export default function EditPlanItem() {
           </div>
           {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
-              <MapMultiMarker 
+              {/* <MapMultiMarker 
                 locations={locationlist} 
                 mode={planItemForm.type == 'transport' ? 'navigation' : 'markers'} 
-              />
+              /> */}
+
+              {/* status */}
+              <div className="my-3">
+                  <StatusPlan mode={'2'} id_user={userId} id_trip={id_trip} id_plan={id_plan}/>
+              </div>
+
+              {/* wallet*/}
+              <div className="my-3">
+                <h4 className="d-flex align-items-center mb-2">
+                  <WalletMinimal size={24} className="me-2" />
+                  Wallet
+                </h4>
+                <div className="d-flex gap-2">
+                  <Link
+                    className="btn custom-dark-hover flex-fill d-flex align-items-center justify-content-center p-2"
+                    href={`/trip/${id_trip}/wallet/plan/${id_plan}`}
+                  >
+                    My plan wallet
+                  </Link>
+                  <Link
+                    className="btn input-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                    href={`/trip/${id_trip}/wallet/plan/${id_plan}/edit`}
+                  >
+                    Edit wallet
+                  </Link>
+                </div>
+              </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,149 @@
+'use client';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Rocket, CheckCircle, SkipForward, XCircle, Clock } from 'lucide-react';
+import Loading from '@/components/Loading';
+import {getStatusTimeString} from '@/utils/dateLocal'
+
+export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan }) { // mode 1 = เเสดงเเค่ status , 2 = เเสดง status กับ sectionmode 
+    const [currentStatus, setCurrentStatus] = useState(null);
+    const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const statusList = [
+        {
+            key: 'not_started',
+            icon: <Clock size={18} />,
+            title: 'ยังไม่เริ่ม',
+            desc: 'สามารถเริ่มดำเนินแผนการนี้ได้ และสามารถย้อนกลับได้หากยังไม่เริ่ม',
+            color: 'border-secondary',
+            className: 'btn-outline-secondary'
+        },
+        {
+            key: 'in_progress',
+            icon: <Rocket size={18} />,
+            title: 'กำลังดำเนิน',
+            desc: 'ไม่สามารถย้อนกลับมาเริ่มต้นใหม่ได้',
+            color: 'border-primary',
+            className: 'btn-outline-primary' 
+        },
+        {
+            key: 'completed',
+            icon: <CheckCircle size={18} />,
+            title: 'เสร็จสิ้น',
+            desc: 'ไม่สามารถย้อนกลับและแก้ไขได้',
+            color: 'border-success',
+            className: 'btn-outline-success' 
+        },
+        {
+            key: 'skipped',
+            icon: <SkipForward size={18} />,
+            title: 'ข้าม',
+            desc: 'ข้ามการดำเนินการแผนนี้ไป',
+            color: 'border-warning',
+            className: 'btn-outline-warning' 
+        },
+        {
+            key: 'cancelled',
+            icon: <XCircle size={18} />,
+            title: 'ยกเลิก',
+            desc: 'ยกเลิกแผนการนี้ทั้งหมด',
+            color: 'border-danger',
+            className: 'btn-outline-danger'
+        },
+    ];
+
+
+
+    useEffect(() => {
+        const fetchStatus = async () => {
+            if (!id_user || !id_trip || !id_plan) return;
+            setLoading(true);
+            try {
+                const response = await axios.get(`/api/trip/${id_user}/${id_trip}/plan/${id_plan}/status`);
+                // console.log(response)
+                setCurrentStatus(response.data.status);
+                setStartTime(response.data.start)
+                setEndTime(response.data.end)
+            } catch (err) {
+                console.error("Failed to fetch plan status:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStatus();
+    }, [id_user, id_trip, id_plan ]);
+
+    const handleStatusChange = async (newStatus) => {
+        if (newStatus === currentStatus) return;
+        try {
+            const response = await axios.put(`/api/trip/${id_user}/${id_trip}/plan/${id_plan}/status`, {
+                status: newStatus,
+            });
+            setCurrentStatus(response.data);
+        } catch (err) {
+            console.error("Failed to update status:", err);
+        }
+    };
+
+    if (loading) return <Loading />;
+
+    // console.log(currentStatus)
+
+    return (
+        <div className="StatusPlan py-3">
+            {/* status */}
+            <div className="status-plan mb-2">
+                <div className="head d-flex align-items-center gap-2">
+                    { currentStatus == 'not_started' && (
+                        <>
+                            { getStatusTimeString(startTime).type == 'On time' ? (
+                                <div className='d-flex align-items-center gap-2'>
+                                    <div className={`spinner-grow text-success`} role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                    <h5 className='mb-0 text-success'>On time</h5>
+                                    <h6 className='mb-0 '>( ยังไม่เริ่ม )</h6>
+                                </div>
+                            ) : (
+                                <div className='d-flex align-items-center gap-2'>
+                                    <div className={`spinner-grow text-warning`} role="status">
+                                        <span className="visually-hidden">Loading...</span>
+                                    </div>
+                                    <h5 className='mb-0 text-warning'>Delay</h5>
+                                    <h5 className='mb-0 text-warning'>{getStatusTimeString(startTime).time}</h5>
+                                    <h6 className='mb-0 '>( ยังไม่เริ่ม )</h6>
+                                </div>
+                            )}
+                            
+                        </>
+                    )}
+                    
+                </div>
+                
+            </div>
+            {mode == '2' && (
+                <div className="btn-group flex-wrap d-flex gap-2" >
+                    {statusList.map((status, index) => (
+                    <div key={status.key} className="">
+                        <input
+                        type="radio"
+                        className="btn-check "
+                        name="btnradio"
+                        id={`status-${status.key}`}
+                        autoComplete="off"
+                        checked={currentStatus === status.key}
+                        onChange={() => handleStatusChange(status.key)}
+                        />
+                        <label className={`btn ${status.className} d-flex align-items-center gap-2 input-outline-dark`} htmlFor={`status-${status.key}`}>
+                            {status.icon}
+                            <span>{status.title}</span>
+                        </label>
+                    </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
