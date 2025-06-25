@@ -776,10 +776,10 @@ export default function EditPlanItem() {
           </div>
           {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
-              {/* <MapMultiMarker 
+              <MapMultiMarker 
                 locations={locationlist} 
                 mode={planItemForm.type == 'transport' ? 'navigation' : 'markers'} 
-              /> */}
+              />
 
               {/* status */}
               <div className="my-3">

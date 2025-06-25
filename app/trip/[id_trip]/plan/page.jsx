@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
+import StatusPlan from '@/components/StatusPlan';
 
 export default function Plan() {
   const router = useRouter();
   const params = useParams();
-  const { id_plan } = params;
   const { userType, userId, id_trip } = useTrip();
   const [planList, setPlanList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ export default function Plan() {
     };
 
     fetchPlanItem();
-  }, [userId, id_trip, id_plan]);
+  }, [userId, id_trip]);
 
   if (loading) return <Loading />;
 
@@ -48,7 +48,10 @@ export default function Plan() {
             style={{ cursor: 'pointer' }}
           >
             <div className="card-body">
-              <h5 className="card-title">{plan.name || '(ไม่มีชื่อ)'}</h5>
+
+              <StatusPlan mode={'3'} id_user={userId} status={plan.status} start={plan.start}  end={plan.end}/>
+              
+              <h5 className="card-title mt-2">{plan.name || '(ไม่มีชื่อ)'}</h5>
               <p className="card-text">
                 <strong>ประเภท:</strong> {plan.type}<br />
               </p>

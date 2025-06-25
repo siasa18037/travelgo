@@ -1,6 +1,8 @@
+// utils/dateLocal.js
 import { utcToZonedTime } from 'date-fns-tz';
 import { format } from 'date-fns';
 import { differenceInMinutes } from 'date-fns';
+import React from 'react'; // ต้องมีสำหรับใช้ JSX ในฟังก์ชัน
 
 // คืน Date object ตามเวลาท้องถิ่นของ timezone ที่เลือก
 export function getLocalDateObjFromUtc({ datetime, timezone }, fallbackTimezone) {
@@ -70,28 +72,56 @@ export function getStatusTimeString(start, fallbackTimezone) {
 
   const tzStart = start.timezone || fallbackTimezone;
 
-  // 1. แปลง start.datetime (UTC) ไปเป็นเวลาท้องถิ่นของมันเอง (tzStart)
+  // 1. แปลง start.datetime (UTC) → local ของเวลานั้น
   const startDate = utcToZonedTime(new Date(start.datetime), tzStart);
 
-  // 2. เอาเวลาปัจจุบันใน local timezone ของ client
+  // 2. เวลา local ปัจจุบันของ client
   const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || fallbackTimezone;
   const nowDate = utcToZonedTime(new Date(), clientTimezone);
 
-  // 3. เปรียบเทียบว่าเลยเวลาหรือยัง
-  if (nowDate <= startDate) {
-    return {type : 'On time'};
+  // 3. คำนวณความต่างของเวลา
+  const totalMinutes = differenceInMinutes(nowDate, startDate);
+
+  // ✅ เงื่อนไขใหม่: เลตไม่เกิน 1 นาที → ยังถือว่า "On time"
+  if (totalMinutes <= 1) {
+    return { type: 'On time' };
   }
 
-  // 4. คำนวณเวลาที่ล่าช้า
-  const totalMinutes = differenceInMinutes(nowDate, startDate);
+  // ถ้าเกิน 1 นาที → Delay
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
-  if (hours === 0) return {type : 'Delay' , time:  `${minutes} นาที` } 
-  if (minutes === 0) return {type : 'Delay' , time:  `${hours} ชั่วโมง` }
-  return {type : 'Delay' , time:  `${hours} ชั่วโมง ${minutes} นาที` } 
+  if (hours === 0) return { type: 'Delay', time: `${minutes} นาที` };
+  if (minutes === 0) return { type: 'Delay', time: `${hours} ชั่วโมง` };
+  return { type: 'Delay', time: `${hours} ชั่วโมง ${minutes} นาที` };
+}
 
-  // if (hours === 0) return `delay` , `${minutes} นาที`;
-  // if (minutes === 0) return `delay` , `${hours} ชั่วโมง`;
-  // return `delay` , `${hours} ชั่วโมง ${minutes} นาที`;
+
+
+
+export function getStatusEndTimeString(end, fallbackTimezone) {
+  if (!end?.datetime) return null;
+
+  const tzEnd = end.timezone || fallbackTimezone;
+  const endDate = utcToZonedTime(new Date(end.datetime), tzEnd);
+
+  const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || fallbackTimezone;
+  const nowDate = utcToZonedTime(new Date(), clientTimezone);
+
+  const minutesLeft = differenceInMinutes(endDate, nowDate);
+
+  if (minutesLeft > 0 && minutesLeft <= 15) {
+    return <h6 className='mb-0 text-warning'>(เหลือเวลา {minutesLeft} นาที)</h6>;
+  }
+
+  if (minutesLeft == 0 ) {
+    return <h6 className='mb-0 text-warning'>(ครบเวลาเเล้ว)</h6>;
+  }
+
+  if (minutesLeft < 0) {
+    const overdue = Math.abs(minutesLeft);
+    return <h6 className='mb-0 text-danger'>(เกินมา {overdue} นาที)</h6>;
+  }
+
+  return null; // ไม่แสดงอะไร
 }
