@@ -114,6 +114,7 @@ const WalletTransactionSchema = new Schema({
   plan_id: { type: Schema.Types.ObjectId },
   time: { type: Date, default: Date.now },
   amount: PriceSchema,
+  host: { type: Schema.Types.ObjectId, ref: 'User' },
   user_from: { type: Schema.Types.ObjectId, ref: 'User' },
   user_to: { type: Schema.Types.ObjectId, ref: 'User' },
   isPaid: { type: Boolean, default: false },

@@ -14,7 +14,6 @@ import MapSearch from '@/components/MapSearch'
 import ShowOriToDes from '@/components/ShowOriToDes'
 import Richtexteditor from '@/components/Richtexteditor'
 import CheckList from '@/components/CheckList'
-import currencyCodes from 'currency-codes';
 import TicketInputList from '@/components/TicketInputList'
 import MapMultiMarker from '@/components/MapMultiMarker'
 import Link from 'next/link';
@@ -27,7 +26,7 @@ export default function EditPlanItem() {
   const { userType, userId, id_trip } = useTrip();
   const [planItemForm, setPlanItemForm] = useState(null);
   const [loading, setLoading] = useState(true);
-  const currencies = currencyCodes.data; // เป็น array ทั้งหมด
+  const [currencies, setCurrencies] = useState([]); 
   const [isLoading, setIsLoading] = useState(false);
   const [locationlist , setLocationlist] = useState([]);
   const mapInitialized = useRef(false);
@@ -118,6 +117,24 @@ export default function EditPlanItem() {
     { value: "walking", icon: <Footprints size={18} /> },
     { value: "bicycle", icon: <Bike size={18} /> },
   ];
+
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await axios.get('https://api.frankfurter.app/latest?from=THB');
+        // ดึง key (รหัสสกุลเงิน) จาก object 'rates'
+        const currencyKeys = Object.keys(response.data.rates);
+        // เพิ่ม 'THB' ซึ่งเป็น base currency และจัดเรียง
+        setCurrencies(['THB', ...currencyKeys].sort());
+      } catch (error) {
+        console.error("Failed to fetch currencies:", error);
+        // ในกรณีที่ API ล้มเหลว อาจจะกำหนดค่าเริ่มต้นไว้
+        setCurrencies(['THB', 'USD', 'EUR', 'JPY', 'GBP' , 'CNY']);
+        showErrorToast("ไม่สามารถโหลดรายการสกุลเงินได้");
+      }
+    };
+    fetchCurrencies();
+  }, []);
 
   if (loading) return <Loading />;
 
@@ -730,9 +747,9 @@ export default function EditPlanItem() {
                       })
                     }
                   >
-                    {currencyCodes.data.map(({ code, currency }) => (
+                    {currencies.map((code) => (
                       <option key={code} value={code}>
-                        {code} - {currency}
+                        {code}
                       </option>
                     ))}
                   </select>

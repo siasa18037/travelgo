@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import Loading from '@/components/Loading';
@@ -11,12 +11,28 @@ const DEFAULT_LOCATION = {
   lat: 13.736717,
 };
 
-const MapMultiMarker = ({ locations, mode = 'markers' }) => { //navigation
+function isWebGLAvailable() {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext &&
+      (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+  } catch (e) {
+    return false;
+  }
+}
+
+const MapMultiMarker = ({ locations, mode = 'markers' }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  
+  const [webglSupported, setWebglSupported] = useState(true);
+
   useEffect(() => {
     if (!mapboxgl.accessToken) return;
+
+    if (!isWebGLAvailable()) {
+      setWebglSupported(false);
+      return;
+    }
 
     const validLocations = (locations || []).filter(
       (loc) => loc.lat !== undefined && loc.lng !== undefined && loc.lat !== '' && loc.lng !== ''
@@ -65,7 +81,6 @@ const MapMultiMarker = ({ locations, mode = 'markers' }) => { //navigation
       }
     });
 
-    // ▼▼▼ ส่วนที่แก้ไข ▼▼▼
     const getRoute = async (coords) => {
       const coordinatesString = coords.map(loc => `${loc.lng},${loc.lat}`).join(';');
       const apiUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinatesString}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
@@ -73,14 +88,11 @@ const MapMultiMarker = ({ locations, mode = 'markers' }) => { //navigation
       try {
         const response = await fetch(apiUrl);
         const json = await response.json();
-        
-        // --- จุดแก้ไขสำคัญ ---
-        // ตรวจสอบว่า API หาเส้นทางเจอหรือไม่
+
         if (json.routes && json.routes.length > 0) {
           const data = json.routes[0];
           const routeGeometry = data.geometry;
 
-          // ถ้าเจอเส้นทาง ก็วาดลงบนแผนที่ตามปกติ
           map.current.addSource('route', {
             type: 'geojson',
             data: {
@@ -105,16 +117,12 @@ const MapMultiMarker = ({ locations, mode = 'markers' }) => { //navigation
             },
           });
         } else {
-          // ถ้าไม่เจอเส้นทาง ให้แสดงข้อความเตือนใน Console และไม่ต้องทำอะไรเพิ่ม
-          // แผนที่จะแสดงแค่หมุด (Marker) ซึ่งเป็นสิ่งที่เราต้องการ
-          console.warn('Mapbox Directions API could not find a route between points. Displaying markers only.');
+          console.warn('Mapbox Directions API could not find a route between points.');
         }
       } catch (error) {
-        // จัดการกับ Error ที่เกิดจาก Network หรืออื่นๆ
         console.error('Error fetching route:', error);
       }
     };
-    // ▲▲▲ สิ้นสุดส่วนที่แก้ไข ▲▲▲
 
     return () => {
       if (map.current) map.current.remove();
@@ -122,6 +130,7 @@ const MapMultiMarker = ({ locations, mode = 'markers' }) => { //navigation
   }, [locations, mode]);
 
   if (!mapboxgl.accessToken) return <div>Mapbox token is missing</div>;
+  if (!webglSupported) return <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>⚠️ This device does not support WebGL. Map cannot be displayed.</div>;
 
   return (
     <div

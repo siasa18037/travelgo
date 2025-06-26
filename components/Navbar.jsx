@@ -15,6 +15,8 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [theme, setTheme] = useState('light');
+  const [currentTime, setCurrentTime] = useState('');
+  const [timezone, setTimezone] = useState('');
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -39,6 +41,31 @@ export default function Navbar() {
       }
     };
     checkLogin();
+  }, []);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+
+      // แสดงเวลาแบบไม่มีวินาที
+      const timeStr = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false, // ใช้รูปแบบ 24 ชั่วโมง (ถ้าอยากได้ AM/PM ให้ใส่ true)
+      });
+
+      // ย่อ timezone (Asia/Bangkok → Bangkok)
+      const fullTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const shortTZ = fullTZ.split('/').pop().replace('_', ' '); // เช่น America/Los_Angeles → Los Angeles
+
+      setCurrentTime(timeStr);
+      setTimezone(shortTZ);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const dropdownRef = useRef(null);
@@ -165,13 +192,25 @@ export default function Navbar() {
                   }}
                 > 
                   <li>
-                    <div className="dropdown-item d-flex align-items-center gap-2">
-                      <UserRoundCheck size={18} /> 
+                    <div
+                      className="dropdown-item d-flex align-items-center gap-2 no-hover"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <label>{currentTime}</label>
+                      <small className="text-muted">{timezone}</small>
+                    </div>
+                  </li>
+                  <li>
+                    <div
+                      className="dropdown-item d-flex align-items-center gap-2 no-hover border-bottom pb-2"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <UserRoundCheck size={18} />
                       <label>{user.name}</label>
                     </div>
                   </li>
                   <li>
-                    <Link className="dropdown-item d-flex align-items-center gap-2" href="/profile">
+                    <Link className="dropdown-item d-flex align-items-center gap-2 mt-2" href="/profile">
                       <UserCircle size={18} /> 
                       <label>Profile</label>
                     </Link>
@@ -201,8 +240,6 @@ export default function Navbar() {
                           <label>Light mode</label>
                         </>
                       )}
-
-                      
                     </button>
                   </li>
                   <li>

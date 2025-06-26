@@ -154,4 +154,9 @@ body {
   filter: invert(1);
 }
 
+/* ในไฟล์ CSS หรือใน style tag */
+.no-hover:hover {
+  background-color: transparent !important;
+  cursor: default !important;
+}
 
