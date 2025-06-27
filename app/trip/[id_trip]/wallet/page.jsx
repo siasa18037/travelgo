@@ -11,6 +11,8 @@ export default function WalletPage() {
   const { userType, userId, id_trip } = useTrip();
   const [transactions, setTransactions] = useState([]);
   const [users, setUsers] = useState([]);
+  const [filterType, setFilterType] = useState('ทั้งหมด');
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,17 +64,48 @@ export default function WalletPage() {
     if (!str) return '';
     return str.length > len ? str.substring(0, len) + '...' : str;
   };
-
-
   const formatPrice = (price) => {return new Intl.NumberFormat('th-TH').format(price);};
   const formatDate = (iso) => new Date(iso).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
+  
+  const filteredTransactions = transactions.filter((tx) => {
+    // รวมข้อมูลที่ต้องการค้นหา
+    const hostName = getUserName(tx.host).toLowerCase();
+    const fromName = getUserName(tx.user_from).toLowerCase();
+    const toName = getUserName(tx.user_to).toLowerCase();
+    const priceStr = tx.amount.price.toString();
+    const timeStr = formatDate(tx.time).toLowerCase();
+
+    // เช็กว่าตรงกับ search ไหม
+    const search = searchText.toLowerCase();
+    const matchesSearch =
+      hostName.includes(search) ||
+      fromName.includes(search) ||
+      toName.includes(search) ||
+      priceStr.includes(search) ||
+      timeStr.includes(search) ||
+      (tx.description && tx.description.toLowerCase().includes(search));
+
+    // กรองตาม filter
+    let matchesFilter = true;
+    if (filterType === 'เฉพาะฉัน') {
+      matchesFilter = tx.host === userId || tx.user_from === userId || tx.user_to === userId;
+    } else if (filterType === 'หนี้ที่ฉันยังไม่คืน') {
+      matchesFilter = tx.type === 'loan' && !tx.isPaid && tx.user_to === userId;
+    } else if (filterType === 'ใช้จ่ายของฉัน') {
+      matchesFilter = tx.type === 'expense' && tx.host === userId;
+    } else if (filterType === 'ลูกหนี้ของฉัน') {
+      matchesFilter = tx.type === 'loan' && tx.user_from === userId;
+    }
+
+    return matchesSearch && matchesFilter;
+  });
+
 
   return (
     <div className='WalletPage container'>
       <div className="head mt-3">
         <Overviewcard userId={userId} id_trip={id_trip} />
       </div>
-
       <div className="button-link mt-2 d-flex align-items-center gap-4">
         <h4 className="d-flex align-items-center mb-0">
           <Wallet size={24} className="me-2" />
@@ -83,12 +116,33 @@ export default function WalletPage() {
         </button>
       </div>
       
-
       <div className="table-responsive mt-3">
+        <div className="head border-bottom d-flex flex-wrap align-items-center gap-2 py-2">
+          <div className="button-filter d-flex gap-2 flex-wrap">
+            {['ทั้งหมด', 'เฉพาะฉัน', 'หนี้ที่ฉันยังไม่คืน', 'ใช้จ่ายของฉัน', 'ลูกหนี้ของฉัน'].map((label) => (
+              <button
+                key={label}
+                className={`btn btn-sm ${filterType === label ? 'btn-dark' : 'btn-outline-secondary'}`}
+                onClick={() => setFilterType(label)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="seach-box ms-auto">
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              placeholder="ค้นหา..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ minWidth: '150px' }}
+            />
+          </div>
+        </div>
         <table className="table table-borderless table-custom">
-         
           <tbody>
-            {transactions.map((tx) => (
+            {filteredTransactions.map((tx) => (
               <tr key={tx._id} className='border-bottom align-middle'> 
                 {tx.type === 'expense' ? (
                   <>
@@ -165,7 +219,7 @@ export default function WalletPage() {
                 )}
               </tr>
             ))}
-            {transactions.length === 0 && (
+            {filteredTransactions.length === 0 && (
               <tr>
                 <td colSpan="5" className="text-center text-muted py-4">ไม่มีข้อมูล</td>
               </tr>
@@ -173,7 +227,6 @@ export default function WalletPage() {
           </tbody>
         </table>
       </div>
-
     </div>
   );
 }
