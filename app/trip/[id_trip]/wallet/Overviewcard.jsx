@@ -105,7 +105,7 @@ export default function Overviewcard({ userId, id_trip }) {
                                         หนี้ที่ยังไม่ได้จ่ายคืน
                                     </div>
                                     <div className="h6 mb-0 font-weight-bold text-gray-800">
-                                        {formatCurrency(overview.unpaidLoanFromUser)} ฿
+                                        {formatCurrency(overview.unpaidLoanToUser)} ฿
                                     </div>
                                 </div>
                                 <div className="col-auto">
@@ -126,7 +126,7 @@ export default function Overviewcard({ userId, id_trip }) {
                                         คนอื่นติดหนี้เรา (ยังไม่คืน)
                                     </div>
                                     <div className="h6 mb-0 font-weight-bold text-gray-800">
-                                        {formatCurrency(overview.unpaidLoanToUser)} ฿
+                                        {formatCurrency(overview.unpaidLoanFromUser)} ฿
                                     </div>
                                 </div>
                                 <div className="col-auto">

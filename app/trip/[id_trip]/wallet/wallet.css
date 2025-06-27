@@ -39,3 +39,14 @@
   background-color: var(--bs-body-bg);   /* พื้นหลังตามธีม */
   color: var(--bs-body-color);           /* ตัวอักษรตามธีม */
 }
+
+
+
+.status-pill {
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}

@@ -107,7 +107,7 @@ const TicketPassSchema = new Schema({
 const WalletTransactionSchema = new Schema({
   type: { 
     type: String, 
-    enum: ['expense','loan'], // expense ใช้จ่าย (ไม่ต้องมี to) , loan ยืม/กู้ (ต้องมี to)
+    enum: ['expense','loan'], // expense ใช้จ่าย (ไม่ต้องมี to) , loan ยืม/กู้ (ต้องมี to)  from A to B เเสดงว่า B ยืม A เเล้วก็เเสดง isPaid ว่าคืนเเล้วยัง ถ้าfasle ยังไม่คืนเเต่ถ้า true คืนเเล้ว
     required: true 
   },
   description: { type: String, required: true },
