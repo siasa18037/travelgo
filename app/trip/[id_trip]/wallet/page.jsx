@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTrip } from '@/components/TripContext';
 import Overviewcard from './Overviewcard';
 import './wallet.css';
-import { Wallet, CheckCircle, XCircle , SquarePen} from 'lucide-react';
+import { Wallet, CheckCircle, XCircle , SquarePen,Settings2,Search ,X} from 'lucide-react';
 import axios from 'axios';
 
 export default function WalletPage() {
@@ -13,6 +13,8 @@ export default function WalletPage() {
   const [users, setUsers] = useState([]);
   const [filterType, setFilterType] = useState('ทั้งหมด');
   const [searchText, setSearchText] = useState('');
+  const [editmode , setEditmode] = useState(false);
+  const [chooseList , setChooseList] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,7 +68,7 @@ export default function WalletPage() {
   };
   const formatPrice = (price) => {return new Intl.NumberFormat('th-TH').format(price);};
   const formatDate = (iso) => new Date(iso).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
-  
+
   const filteredTransactions = transactions.filter((tx) => {
     // รวมข้อมูลที่ต้องการค้นหา
     const hostName = getUserName(tx.host).toLowerCase();
@@ -95,18 +97,32 @@ export default function WalletPage() {
       matchesFilter = tx.type === 'expense' && tx.host === userId;
     } else if (filterType === 'ลูกหนี้ของฉัน') {
       matchesFilter = tx.type === 'loan' && tx.user_from === userId;
+    } else if (filterType === 'ลูกหนี้ของฉันที่ยังไม่คืน') {
+      matchesFilter = tx.type === 'loan' && tx.user_from === userId && !tx.isPaid ;
     }
 
     return matchesSearch && matchesFilter;
   });
 
+  const handleSelect = (id, checked) => {
+    if (checked) {
+      setChooseList((prev) => [...prev, id]);
+    } else {
+      setChooseList((prev) => prev.filter((item) => item !== id));
+    }
+  };
+
+
+  const updateLaodIsPaid = (id_list) => {
+    console.log(id_list)
+  }
 
   return (
     <div className='WalletPage container'>
       <div className="head mt-3">
         <Overviewcard userId={userId} id_trip={id_trip} />
       </div>
-      <div className="button-link mt-2 d-flex align-items-center gap-4">
+      <div className="button-link mt-2 d-flex align-items-center justify-content-between gap-4">
         <h4 className="d-flex align-items-center mb-0">
           <Wallet size={24} className="me-2" />
           Wallet
@@ -115,35 +131,74 @@ export default function WalletPage() {
           เพิ่มการเงิน
         </button>
       </div>
-      
-      <div className="table-responsive mt-3">
-        <div className="head border-bottom d-flex flex-wrap align-items-center gap-2 py-2">
+      <div className="head border-bottom d-flex flex-wrap align-items-center gap-2 py-2">
           <div className="button-filter d-flex gap-2 flex-wrap">
-            {['ทั้งหมด', 'เฉพาะฉัน', 'หนี้ที่ฉันยังไม่คืน', 'ใช้จ่ายของฉัน', 'ลูกหนี้ของฉัน'].map((label) => (
+            {['ทั้งหมด', 'เฉพาะฉัน', 'หนี้ที่ฉันยังไม่คืน', 'ใช้จ่ายของฉัน', 'ลูกหนี้ของฉัน' , 'ลูกหนี้ของฉันที่ยังไม่คืน'].map((label) => (
               <button
                 key={label}
-                className={`btn btn-sm ${filterType === label ? 'btn-dark' : 'btn-outline-secondary'}`}
+                className={`btn btn-sm input-outline-dark ${filterType === label ? 'active' : ''}`}
                 onClick={() => setFilterType(label)}
               >
                 {label}
               </button>
             ))}
           </div>
-          <div className="seach-box ms-auto">
-            <input
-              type="text"
-              className="form-control form-control-sm"
-              placeholder="ค้นหา..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ minWidth: '150px' }}
-            />
+          <div className="seach-box ms-auto d-flex align-items-center gap-2">
+            <div className="input-group" >
+              <input
+                type="text"
+                className="form-control form-control-sm input-outline-dark"
+                placeholder="ค้นหา..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ minWidth: '150px' }}
+              />
+              <span className="input-group-text input-outline-dark"><Search size={16}/></span>
+            </div>
+            {editmode ? (
+                <>
+                <button
+                    className="btn btn-sm btn-danger d-flex align-items-center"
+                    onClick={() => setEditmode(false)}
+                  >
+                    <X size={18}/>
+                </button>
+                <button 
+                  className="btn btn-sm btn-success d-flex align-items-center"
+                  onClick={() => updateLaodIsPaid(chooseList)}
+                >
+                    <CheckCircle size={18} />
+                    <label className='ms-2 ' style={{minWidth:'90px'}}>คืนเงินหลายชุด</label>
+                </button>
+                </>
+              ) : (
+                <button
+                    className="btn btn-sm custom-dark-hover d-flex align-items-center"
+                    onClick={() => setEditmode(true)}
+                  >
+                    <CheckCircle size={18} />
+                    <label className='ms-2 ' style={{minWidth:'120px'}}>คืนเงินเเบบหลายชุด</label>
+                </button>
+              )}
           </div>
-        </div>
-        <table className="table table-borderless table-custom">
+      </div>
+      <div className="table-responsive">
+        <table className="table table-borderless table-custom table-hover">
           <tbody>
             {filteredTransactions.map((tx) => (
-              <tr key={tx._id} className='border-bottom align-middle'> 
+              <tr key={tx._id} className='border-bottom align-middle'>
+                {editmode && (
+                  <td>
+                    {(tx.user_to && !tx.isPaid) && (
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={chooseList.includes(tx._id)}
+                        onChange={(e) => handleSelect(tx._id, e.target.checked)}
+                      />
+                    )}
+                  </td>
+                )}
                 {tx.type === 'expense' ? (
                   <>
                     <td style={{ width: "20px" }} >
