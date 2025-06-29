@@ -1,0 +1,27 @@
+.ShowDetailBox {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 500px;
+    width: 90%;
+    z-index: 1050;
+}
+.ShowDetailBox .detail-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+.ShowDetailBox .loan-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+.ShowDetailBox .avatar-small {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+}

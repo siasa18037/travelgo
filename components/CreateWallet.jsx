@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MoveRight, Users, X ,CircleDollarSign ,NotebookPen,NotebookText} from "lucide-react";
+import { Info, Users, X ,CircleDollarSign ,NotebookPen,NotebookText} from "lucide-react";
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Select from 'react-select';
 import axios from 'axios';
@@ -329,7 +329,7 @@ export default function CreateWallet({ userId, id_trip, id_plan = '', onClose , 
         {/* Note */}
         <div className="mb-2">
           <div className="tittle d-flex align-items-center gap-1 mb-1">
-            <NotebookPen size={15} />
+            <Info size={15} />
             <label className="form-label mb-0">Note</label>
           </div>
           <textarea

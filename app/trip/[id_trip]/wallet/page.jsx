@@ -7,6 +7,7 @@ import './wallet.css';
 import { Wallet, CheckCircle, XCircle, SquarePen, Settings2, Search, X } from 'lucide-react';
 import axios from 'axios';
 import CreateWallet from '@/components/CreateWallet';
+import ShowDetailBox from './ShowDetailBox'
 import { showErrorToast , showSuccessToast, confirmBox} from "@/lib/swal";
 
 export default function WalletPage() {
@@ -18,9 +19,11 @@ export default function WalletPage() {
   const [editmode, setEditmode] = useState(false);
   const [chooseList, setChooseList] = useState([]);
   const [showCreateWallet, setShowCreateWallet] = useState(false);
+  const [showShowDetailBox, setShowShowDetailBox] = useState(false);
   const [overview, setOverview] = useState(null);
   const [exchangeRates , setExchangeRates] = useState(null);
   const [isLoading,setIsLoading] = useState(false)
+  const [showDetailData , setShowDetailData] = useState(null);
 
   const fetchData = useCallback(async () => {
     if (!userId || !id_trip) return; 
@@ -204,8 +207,20 @@ export default function WalletPage() {
     setChooseList([]);  
   };
 
+  const handleDetailUpdateSuccess = () => {
+      fetchData();
+      setShowShowDetailBox(false);
+  };
+
   const showdetailbox = (transaction_id) => {
-    console.log(transaction_id)
+      const transactionData = transactions.find(tx => tx._id === transaction_id);
+      if (transactionData) {
+          setShowDetailData(transactionData);
+          setShowShowDetailBox(true);
+      } else {
+          console.error("Transaction not found!");
+          showErrorToast("ไม่พบข้อมูลรายการนี้");
+      }
   }
 
   return (
@@ -397,6 +412,16 @@ export default function WalletPage() {
           onClose={() => setShowCreateWallet(false)}
           onSuccess={handleCreateSuccess}
         />
+      )}
+      {showShowDetailBox && (
+          <ShowDetailBox
+              userId={userId}
+              id_trip={id_trip}
+              onClose={() => setShowShowDetailBox(false)}
+              onSuccess={handleDetailUpdateSuccess}
+              data={showDetailData}
+              user_list={users}
+          />
       )}
     </>
   );
