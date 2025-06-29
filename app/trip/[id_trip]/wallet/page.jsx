@@ -301,11 +301,15 @@ export default function WalletPage() {
                   {editmode && (
                     <td>
                       {(tx.user_to == userId && !tx.isPaid) && (
-                        <input
+                       <input
                           className="form-check-input"
                           type="checkbox"
                           checked={chooseList.includes(tx._id)}
-                          onChange={(e) => handleSelect(tx._id, e.target.checked)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleSelect(tx._id, e.target.checked);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
                         />
                       )}
                     </td>
