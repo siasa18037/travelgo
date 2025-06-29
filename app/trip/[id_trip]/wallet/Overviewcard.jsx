@@ -4,31 +4,7 @@ import { showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
 import { Wallet, CircleDollarSign, Handshake, HandCoins } from 'lucide-react';
 
-export default function Overviewcard({ userId, id_trip }) {
-    const [overview, setOverview] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        // ตรวจสอบว่ามี props ที่จำเป็นหรือไม่
-        if (!userId || !id_trip) {
-            setLoading(false);
-            return;
-        }
-
-        const fetchOverview = async () => {
-            try {
-                const response = await axios.get(`/api/trip/${userId}/${id_trip}/wallet_transaction/overview`);
-                setOverview(response.data);
-            } catch (error) {
-                console.error("Failed to fetch overview data:", error);
-                showErrorToast("ไม่สามารถโหลดข้อมูลภาพรวมได้");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchOverview();
-    }, [userId, id_trip]);
+export default function Overviewcard({ userId, id_trip , overview}) {
 
     //ฟังก์ชันสำหรับจัดรูปแบบตัวเลขให้สวยงาม
     const formatCurrency = (number) => {
@@ -41,10 +17,6 @@ export default function Overviewcard({ userId, id_trip }) {
             maximumFractionDigits: 2
         });
     };
-
-    if (loading) {
-        return <Loading />;
-    }
 
     if (!overview) {
         return <div className="text-center p-4 text-gray-500">ไม่สามารถแสดงข้อมูลได้</div>;
