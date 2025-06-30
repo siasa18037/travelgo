@@ -425,6 +425,7 @@ export default function WalletPage() {
               onSuccess={handleDetailUpdateSuccess}
               data={showDetailData}
               user_list={users}
+              exchangeRates = {exchangeRates}
           />
       )}
     </>

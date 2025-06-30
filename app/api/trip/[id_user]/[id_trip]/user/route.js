@@ -36,7 +36,7 @@ export async function GET(req, { params }) {
         // 2. ใช้ $in เพื่อค้นหา User ทั้งหมดที่มี _id อยู่ใน Array `userIdsInTrip`
         const users = await User.find({
             '_id': { $in: userIdsInTrip }
-        }).select('_id name email avatar type_user'); // type_user อาจจะต้องแก้เป็นฟิลด์ที่ถูกต้องใน Model User
+        }).select('_id name email avatar type_user promptpay_number'); // type_user อาจจะต้องแก้เป็นฟิลด์ที่ถูกต้องใน Model User
 
         // ส่งข้อมูล user ทั้งหมดในทริปกลับไป
         return NextResponse.json(users);

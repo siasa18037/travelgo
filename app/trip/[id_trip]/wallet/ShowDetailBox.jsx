@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showErrorToast, showSuccessToast, confirmBox ,confirmDelete} from "@/lib/swal"; // เพิ่ม confirmBox
-import { Wallet, CircleDollarSign, Handshake, HandCoins, X, CheckCircle, XCircle, Calendar, User, Info , Trash} from 'lucide-react';
+import { Wallet, CircleDollarSign, Handshake, HandCoins, X, CheckCircle, XCircle, Calendar, User, Info , Trash,QrCode} from 'lucide-react';
 import './ShowDetailBox.css'
 
 // 1. (แก้ไข) เพิ่ม user_list เข้าไปใน props
-export default function ShowDetailBox({ userId, id_trip, data, onClose, onSuccess, user_list }) {
+export default function ShowDetailBox({ userId, id_trip, data, onClose, onSuccess, user_list , exchangeRates }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
@@ -15,7 +15,7 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
     }
 
     // 2. (เพิ่ม) ฟังก์ชัน helpers สำหรับจัดการข้อมูล user และ format ต่างๆ
-    const getUser = (id) => user_list.find(u => u._id === id) || { name: 'Unknown', avatar: '/images/userprofile.jpg' };
+    const getUser = (id) => user_list.find(u => u._id === id) || { name: 'Unknown', avatar: '/images/userprofile.jpg' , promptpay_number : ''};
     const formatPrice = (price) => {
         return new Intl.NumberFormat('th-TH', {
             minimumFractionDigits: 2,
@@ -47,6 +47,74 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                 await axios.put(`/api/trip/${userId}/${id_trip}/wallet_transaction`, [data._id]);
                 showSuccessToast("อัปเดตรายการคืนสำเร็จ!");
                 onSuccess(); // เรียก onSuccess ที่ได้รับจาก props เพื่อ refresh ข้อมูลและปิด modal
+            } catch (error) {
+                showErrorToast("เกิดข้อผิดพลาดในการอัปเดต");
+                console.error("Update error:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    }
+
+    const Qrcode = async () => {
+        // 1. หาข้อมูลเจ้าหนี้ และเบอร์ PromptPay
+        const userFrom = getUser(data.user_from);
+        const promptpayNumber = userFrom.promptpay_number;
+
+        // 2. ตรวจสอบว่ามีเบอร์ PromptPay หรือไม่
+        if (!promptpayNumber) {
+            showErrorToast(`ผู้ใช้ ${userFrom.name} ยังไม่ได้ตั้งค่า PromptPay`);
+            return;
+        }
+
+        // 3. ตรวจสอบว่ามีข้อมูลอัตราแลกเปลี่ยนหรือไม่
+        if (!exchangeRates) {
+            showErrorToast("ยังไม่สามารถโหลดอัตราแลกเปลี่ยนได้, กรุณาลองใหม่อีกครั้ง");
+            return;
+        }
+
+        // 4. คำนวณยอดเงินที่ต้องจ่ายเป็น THB
+        let amountInTHB = 0;
+        const { price, currency } = data.amount;
+
+        if (currency === 'THB') {
+            amountInTHB = price;
+        } else {
+            if (exchangeRates[currency]) {
+                // แปลงสกุลเงินอื่นให้เป็น THB
+                amountInTHB = price / exchangeRates[currency];
+            } else {
+                showErrorToast(`ไม่พบอัตราแลกเปลี่ยนสำหรับสกุลเงิน ${currency}`);
+                return;
+            }
+        }
+
+        // 5. Format ยอดเงินสำหรับแสดงผล (มีสัญลักษณ์ ฿) และสำหรับใช้ใน URL (ตัวเลขล้วน)
+        const amountForURL = amountInTHB.toFixed(2); // ยอดเงินสำหรับ PromptPay URL (ทศนิยม 2 ตำแหน่ง)
+        const amountForDisplay = new Intl.NumberFormat('th-TH', {
+            style: 'currency',
+            currency: 'THB'
+        }).format(amountInTHB);
+
+        // 6. แสดงกล่องยืนยันพร้อม QR Code
+        const result = await confirmBox({
+            title: `สแกนเพื่อจ่าย ${amountForDisplay}`,
+            text: `เมื่อโอนเงินสำเร็จ กรุณากดยืนยันการชำระเงิน`,
+            imageUrl: `https://promptpay.io/${promptpayNumber}/${amountForURL}.png`,
+            imageWidth: 200,
+            imageHeight: 200,
+            imageAlt: 'PromptPay QR Code',
+            confirmButtonText: 'ชำระเงินแล้ว, ยืนยัน',
+            cancelButtonText: 'ยกเลิก'
+        });
+
+        // 7. หากผู้ใช้กดยืนยัน ให้อัปเดตสถานะการจ่ายเงิน
+        if (result.isConfirmed) {
+            setIsLoading(true);
+            try {
+                await axios.put(`/api/trip/${userId}/${id_trip}/wallet_transaction`, [data._id]);
+                showSuccessToast("อัปเดตรายการคืนสำเร็จ!");
+                onSuccess(); // เรียก onSuccess เพื่อ refresh ข้อมูลและปิด modal
             } catch (error) {
                 showErrorToast("เกิดข้อผิดพลาดในการอัปเดต");
                 console.error("Update error:", error);
@@ -180,6 +248,15 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                                 (<><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังดำเนินการ...</>) :
                                 (<div className='d-flex align-items-center'><Handshake size={18} className='me-2'/>ยืนยันการคืนเงิน</div>)
                             }
+                        </button>
+                    )}
+                    {!data.isPaid && (data.user_to === userId || data.host === userId) && getUser(data.user_from).promptpay_number && (
+                        <button
+                            className="btn btn-outline-success ms-2"
+                            onClick={Qrcode}
+                            disabled={isLoading}
+                        >
+                            <QrCode size={18}/>
                         </button>
                     )}
                     </div>

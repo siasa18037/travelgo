@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Mail, Phone, FileText ,User,Trash} from 'lucide-react';
+import { Mail, Phone, FileText ,User,Trash,QrCode} from 'lucide-react';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import UploadButton from '@/components/UploadButton'; 
 import './profile.css'
@@ -15,6 +15,7 @@ export default function Profile() {
     avatar :'',
     email: '',
     passport_number: '',
+    promptpay_number: '',
     phone: [], // array ของเบอร์โทร
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +45,7 @@ export default function Profile() {
                   phone: Array.isArray(userData.phone) && userData.phone.length > 0
                     ? userData.phone.map(p => typeof p === 'object' ? p : { name: '', phone_number: '' })
                     : [],
+                  promptpay_number : userData.promptpay_number || '',
                 });
               }else{
                 logoutUser()
@@ -145,6 +147,8 @@ export default function Profile() {
 
   if (!user) return <Loading />;
 
+  console.log(form)
+
   return (
     <main className="Profile">
       <div className="container py-5">
@@ -163,7 +167,7 @@ export default function Profile() {
               <h2>Profile</h2>
               {/* Name */}
               <div className="mb-3">
-                <label htmlFor="name" className="form-label">
+                <label htmlFor="name d-flex align-items-center" className="form-label">
                   <User size={18} /> Name
                 </label>
                 <input
@@ -178,7 +182,7 @@ export default function Profile() {
               </div>
               {/* Email */}
               <div className="mb-3">
-                <label htmlFor="email" className="form-label">
+                <label htmlFor="email d-flex align-items-center" className="form-label">
                   <Mail size={18} /> Email
                 </label>
                 <input
@@ -193,7 +197,7 @@ export default function Profile() {
               </div>
               {/* Passport Number */}
               <div className="mb-3">
-                <label htmlFor="passport_number" className="form-label">
+                <label htmlFor="passport_number d-flex align-items-center" className="form-label">
                   <FileText size={18} /> Passport Number
                 </label>
                 <input
@@ -256,6 +260,20 @@ export default function Profile() {
                 >
                   + เพิ่มเบอร์โทร
                 </button>
+              </div>
+              {/* promptpay */}
+              <div className="mb-3">
+                <label htmlFor="passport_number d-flex align-items-center" className="form-label">
+                  <QrCode size={18} /> PromptPay Number
+                </label>
+                <input
+                  type="text"
+                  className="form-control input-outline-dark "
+                  id="promptpay_number"
+                  name="promptpay_number"
+                  value={form?.promptpay_number || ''}
+                  onChange={handleChange}
+                />
               </div>
               {/* Submit Button */}
               <button
@@ -340,7 +358,6 @@ export default function Profile() {
                 )}
                 </button>
               </div>
-
             </form>
           </div>
         </div>

@@ -44,6 +44,10 @@ const userSchema = new Schema({
     type: String,
     trim: true,
   },
+  promptpay_number: {
+    type: String,
+    trim: true,
+  },
 }, {
   timestamps: true,
 });
