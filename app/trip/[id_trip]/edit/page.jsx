@@ -227,7 +227,7 @@ export default function EditTrip() {
                   My plan
                 </Link>
                 <Link
-                  className="btn btn-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                  className="btn input-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
                   href={`/trip/${id_trip}/plan/edit`}
                 >
                   Edit plan
@@ -249,7 +249,7 @@ export default function EditTrip() {
                   My tiket
                 </Link>
                 <Link
-                  className="btn btn-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                  className="btn input-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
                   href={`/trip/${id_trip}/ticket/add`}
                 >
                   Add tiket
@@ -271,7 +271,7 @@ export default function EditTrip() {
                   My Wallet
                 </Link>
                 <Link
-                  className="btn btn-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                  className="btn input-outline-dark  flex-fill d-flex align-items-center justify-content-center p-2"
                   href={`/trip/${id_trip}/ticket/add`}
                 >
                   Summary 
@@ -449,6 +449,8 @@ export default function EditTrip() {
                   "แก้ไขทิป"
                 )}
               </button>
+
+              
 
             {/* </form> */}
           </div>

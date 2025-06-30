@@ -21,9 +21,6 @@ export default function CreateWallet({ userId, id_trip, id_plan = '', onClose , 
   const [isLoading,setIsLoading] = useState(false)
   
     const handleSubmit = async () => {
-        
-        
-        
         if (!amount.price || parseFloat(amount.price) <= 0) {
             showErrorToast("กรุณากรอกจำนวนเงินให้ถูกต้อง");
             return;
@@ -59,17 +56,34 @@ export default function CreateWallet({ userId, id_trip, id_plan = '', onClose , 
                 };
                 data_list.push(data);
             } else { // loanMode === 'lend'
-                const pricePerPerson = parseFloat(amount.price) / (loanBorrowProportion + 1);
-                for (let i = 0; i < userBorrowList.length; i++) {
+                if (userBorrowList.length == 1){
                     const data = {
                         ...baseData,
                         type: 'loan',
                         host: userId,
                         user_from: userId,
-                        user_to: userBorrowList[i],
-                        amount: { ...amount, price: pricePerPerson },
+                        user_to: userBorrowList[0],
+                        amount: { ...amount, price: parseFloat(amount.price) },
                     };
                     data_list.push(data);
+                }else{
+                    let pricePerPerson
+                    if (loanBorrowProportion == 1){
+                        pricePerPerson = parseFloat(amount.price)
+                    }else{
+                        pricePerPerson = parseFloat(amount.price) / (loanBorrowProportion + 1);
+                    }
+                    for (let i = 0; i < userBorrowList.length; i++) {
+                        const data = {
+                            ...baseData,
+                            type: 'loan',
+                            host: userId,
+                            user_from: userId,
+                            user_to: userBorrowList[i],
+                            amount: { ...amount, price: pricePerPerson },
+                        };
+                        data_list.push(data);
+                    }
                 }
             }
         } else { // type === 'expense'

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { showErrorToast, showSuccessToast, confirmBox } from "@/lib/swal"; // เพิ่ม confirmBox
-import { Wallet, CircleDollarSign, Handshake, HandCoins, X, CheckCircle, XCircle, Calendar, User, Info } from 'lucide-react';
+import { showErrorToast, showSuccessToast, confirmBox ,confirmDelete} from "@/lib/swal"; // เพิ่ม confirmBox
+import { Wallet, CircleDollarSign, Handshake, HandCoins, X, CheckCircle, XCircle, Calendar, User, Info , Trash} from 'lucide-react';
 import './ShowDetailBox.css'
 
 // 1. (แก้ไข) เพิ่ม user_list เข้าไปใน props
 export default function ShowDetailBox({ userId, id_trip, data, onClose, onSuccess, user_list }) {
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
     // ถ้าไม่มีข้อมูล ให้ return null เพื่อไม่แสดงผลอะไรเลย
     if (!data) {
@@ -34,7 +35,9 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
         const result = await confirmBox({
             title: 'ยืนยันการคืนเงิน',
             text: `คุณต้องการยืนยันว่ารายการนี้ได้รับการคืนเงินแล้วใช่หรือไม่?`,
-            icon: 'question'
+            icon: 'question',
+            confirmButtonText : 'คืนเงิน', 
+            cancelButtonText : 'ยกเลิก'
         });
 
         if (result.isConfirmed) {
@@ -49,6 +52,24 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                 console.error("Update error:", error);
             } finally {
                 setIsLoading(false);
+            }
+        }
+    }
+
+    const deleteItem = async () => {
+        const result = await confirmDelete();
+        if (result.isConfirmed){
+            setIsLoadingDelete(true);
+            try {
+                await axios.delete(`/api/trip/${userId}/${id_trip}/wallet_transaction`, { data: [data._id] });
+
+                showSuccessToast("ลบสำเร็จ!");
+                onSuccess();
+            } catch (error) {
+                showErrorToast("เกิดข้อผิดพลาดในการลบ");
+                console.error("Delete error:", error);
+            } finally {
+                setIsLoadingDelete(false);
             }
         }
     }
@@ -75,6 +96,20 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                     <div className="detail-item d-flex align-items-center"><Calendar size={16} /><span className="ms-2"><b>วันที่:</b> {formatDate(data.time)}</span></div>
                     <div className="detail-item d-flex align-items-center"><User size={16} /><span className="ms-2"><b>จ่ายโดย:</b> {host.name}</span></div>
                     {data.note && <div className="detail-item mt-1 d-flex align-items-center"><Info size={16} /><span className="ms-2"><b>โน้ต:</b> {data.note}</span></div>}
+                    <div className="mt-4 text-center">
+                        {data.host === userId && (
+                            <button
+                                className="btn btn-danger me-2 "
+                                onClick={deleteItem}
+                                disabled={isLoadingDelete}
+                            >
+                                {isLoadingDelete ?
+                                    (<><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังลบ...</>) :
+                                    (<div className='d-flex align-items-center'><Trash className='me-2' size={18} /> ลบ</div>)
+                                }
+                            </button>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -122,21 +157,32 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                     </div>
                      {data.note && <div className="detail-item d-flex align-items-center mt-1"><Info size={16} /><span className="ms-2"><b>โน้ต:</b> {data.note}</span></div>}
 
-                    {/* ปุ่มสำหรับอัปเดตสถานะ */}
-                    {!data.isPaid && (data.user_to === userId || data.host === userId) && (
-                        <div className="mt-4 text-center">
-                            <button
-                                className="btn btn-success"
-                                onClick={updateIsPaid}
-                                disabled={isLoading}
-                            >
-                                {isLoading ?
-                                    (<><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังดำเนินการ...</>) :
-                                    (<><Handshake size={18} /> ยืนยันการคืนเงิน</>)
-                                }
-                            </button>
-                        </div>
+                    <div className="mt-4 text-center">
+                    {data.host === userId && (
+                        <button
+                            className="btn btn-danger me-2 "
+                            onClick={deleteItem}
+                            disabled={isLoadingDelete}
+                        >
+                            {isLoadingDelete ?
+                                (<><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังลบ...</>) :
+                                (<div className='d-flex align-items-center'><Trash className='me-2' size={18} /> ลบ</div>)
+                            }
+                        </button>
                     )}
+                    {!data.isPaid && (data.user_to === userId || data.host === userId) && (
+                        <button
+                            className="btn btn-success"
+                            onClick={updateIsPaid}
+                            disabled={isLoading}
+                        >
+                            {isLoading ?
+                                (<><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังดำเนินการ...</>) :
+                                (<div className='d-flex align-items-center'><Handshake size={18} className='me-2'/>ยืนยันการคืนเงิน</div>)
+                            }
+                        </button>
+                    )}
+                    </div>
                 </div>
             );
         }
@@ -152,7 +198,7 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                 {/* head */}
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h5 className="mb-0 d-flex align-items-center"><Wallet size={20} className="me-2" />รายละเอียดธุรกรรม</h5>
-                    <button className="btn btn-sm btn-light" onClick={onClose}>
+                    <button className="btn btn-sm" onClick={onClose}>
                         <X size={20} />
                     </button>
                 </div>

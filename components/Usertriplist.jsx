@@ -65,18 +65,18 @@ export default function UserSelectList({ value = [], onChange, userId_host }) {
             <Users size={18} className="me-1" /> Member
         </label>
 
-        <div className="position-relative">
+        <div className="position-relative mb-2">
             <div className="input-group">
-            <input
-                type="text"
-                className="form-control mb-2 input-outline-dark"
-                placeholder="ค้นหาผู้ใช้..."
-                value={input}
-                onChange={(e) => handleSearch(e.target.value)}
-            />
-            <button className="btn div-outline-white input-outline-dark d-flex align-items-center" type="button" disabled>
-                <Search size={18} />
-            </button>
+              <input
+                  type="text"
+                  className="form-control input-outline-dark"
+                  placeholder="ค้นหาผู้ใช้..."
+                  value={input}
+                  onChange={(e) => handleSearch(e.target.value)}
+              />
+              <button className="btn div-outline-white input-outline-dark d-flex align-items-center" type="button" disabled>
+                  <Search size={18} />
+              </button>
             </div>
         </div>
 

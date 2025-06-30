@@ -323,7 +323,7 @@ export default function WalletPage() {
                           </svg>
                         </span>
                       </td>
-                      <td className='small ' style={{ minWidth: "110px" }} >{formatDate(tx.time)}</td>
+                      <td className='small ' style={{ minWidth: "120px" }} >{formatDate(tx.time)}</td>
                       <td className="d-flex align-items-center" style={{ minWidth: "600px" }}>
                         <img
                           src={getUserAvatar(tx.host)}
@@ -350,7 +350,7 @@ export default function WalletPage() {
                           </svg>
                         </span>
                       </td>
-                      <td className='small' style={{ minWidth: "110px" }}>{formatDate(tx.time)}</td>
+                      <td className='small' style={{ minWidth: "120px" }}>{formatDate(tx.time)}</td>
                       <td className="d-flex align-items-center" style={{ minWidth: "600px" }}>
                         <img
                           src={getUserAvatar(tx.user_to)}
