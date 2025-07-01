@@ -181,12 +181,13 @@ export default function WalletPage() {
         maximumFractionDigits: 2
       }).format(totalAmountInTHB);
 
-      const result = await confirmBox({
+      let result
+      result = await confirmBox({
         title: `ที่ต้องชำระคือ ${formattedTotal}`,
         text: `คุณต้องการยืนยันการคืนหรือไม่?`,
         icon: 'question',
         confirmButtonText: 'ใช่, ยืนยัน',
-        cancelButtonText: 'ยกเลิก'
+        cancelButtonText: 'ยกเลิก',
       });
 
       if (result.isConfirmed) {
