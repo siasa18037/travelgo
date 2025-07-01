@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import {  Map, FileText ,PlaneTakeoff ,PlaneLanding , Calendar,Clock ,Route ,Ticket,Wallet2} from 'lucide-react';
+import {  Map, FileText ,PlaneTakeoff ,PlaneLanding , Calendar,Clock ,Route ,Ticket,Wallet2, Rocket, CheckCircle, SkipForward, XCircle , Trash} from 'lucide-react';
 import UploadButton from '@/components/UploadButton'; 
 import './edit.css'
-import { showSuccessToast, showErrorToast } from "@/lib/swal";
+import { showSuccessToast, showErrorToast , inputBox} from "@/lib/swal";
 import CountryInput from "@/components/CountryInput";
 import Usertriplist from "@/components/Usertriplist"
 import { logoutUser } from "@/utils/logout";
@@ -25,8 +25,10 @@ export default function EditTrip() {
   const [endTime, setEndTime] = useState('18:00');
   const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [loadingTrips, setLoadingTrips] = useState(true); // <-- เพิ่มตัวนี้
   const [form, setForm] = useState({
+    status:'',
     name: '',
     description: '',
     start_date: '', 
@@ -174,7 +176,82 @@ export default function EditTrip() {
   const handleSelectedUsers = (list) => {
     setForm((prev) => ({ ...prev, user: list }));
   }
-    // console.log(form)
+
+  const statusList = [
+        {
+            key: 'not_started',
+            icon: <Clock size={18} />,
+            title: 'ยังไม่เริ่ม',
+            desc: 'สามารถเริ่มดำเนินแผนการนี้ได้ และสามารถย้อนกลับได้หากยังไม่เริ่ม',
+            color: 'border-secondary',
+            className: 'btn-outline-secondary'
+        },
+        {
+            key: 'in_progress',
+            icon: <Rocket size={18} />,
+            title: 'กำลังดำเนิน',
+            desc: 'ไม่สามารถย้อนกลับมาเริ่มต้นใหม่ได้',
+            color: 'border-primary',
+            className: 'btn-outline-primary' 
+        },
+        {
+            key: 'completed',
+            icon: <CheckCircle size={18} />,
+            title: 'เสร็จสิ้น',
+            desc: 'ไม่สามารถย้อนกลับและแก้ไขได้',
+            color: 'border-success',
+            className: 'btn-outline-success' 
+        },
+        {
+            key: 'cancelled',
+            icon: <XCircle size={18} />,
+            title: 'ยกเลิก',
+            desc: 'ยกเลิกแผนการนี้ทั้งหมด',
+            color: 'border-danger',
+            className: 'btn-outline-danger'
+        },
+    ];
+
+  const deleteTrip = async () => {
+    const adminUser = form.user.find(u => u.id_user === userId && u.type === 'admin');
+
+    if (!adminUser) {
+      showErrorToast("Only the trip administrator can delete this trip.");
+      return;
+    }
+
+    const { value: password, isConfirmed } = await inputBox({
+      title: "Are you sure?",
+      text: "To delete this trip, please enter your password. This action cannot be undone.",
+      icon: "warning",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (isConfirmed && password) {
+      setIsLoadingDelete(true);
+      try {
+        // 4. ส่ง Request ไปยัง API
+        await axios.delete(`/api/trip/${userId}/${id_trip}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          data: JSON.stringify(password), // ส่งรหัสผ่านใน request body
+        });
+
+        showSuccessToast("Trip deleted successfully!");
+        router.push('/dashboard'); 
+
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || "Failed to delete trip.";
+        showErrorToast(errorMessage);
+      } finally {
+        setIsLoadingDelete(false);
+      }
+    }
+  };
+    
+  // console.log(form)
 
   if (!userId || loadingTrips) return <Loading />;
 
@@ -197,7 +274,7 @@ export default function EditTrip() {
             </div>
             <label className='pb-2'>Upload Image trip profile or Link</label>
             <UploadButton onUploaded={handleUploadComplete} />
-            <div className="mb-5">
+            <div className="mb-4">
                 <label htmlFor="profile_imagee" className="form-label">
                 </label>
                 <input
@@ -212,6 +289,32 @@ export default function EditTrip() {
                 />
             </div>
 
+            {/* status */}
+            <div className="mb-4">
+              <h4 className="d-flex align-items-center mb-2">
+                <Route size={24} className="me-2" />
+                Status
+              </h4>
+              <div className="btn-group flex-wrap d-flex gap-2 mt-2" >
+                  {statusList.map((status, index) => (
+                  <div key={status.key} className="">
+                      <input
+                        type="radio"
+                        className="btn-check "
+                        name="btnradio"
+                        id={`status-${status.key}`}
+                        autoComplete="off"
+                        checked={form.status === status.key}
+                        onChange={() => setForm({ ...form, status: status.key})}
+                      />
+                      <label className={`btn ${status.className} d-flex align-items-center gap-2 input-outline-dark`} htmlFor={`status-${status.key}`}>
+                          {status.icon}
+                          <span>{status.title}</span>
+                      </label>
+                  </div>
+                  ))}
+              </div>
+            </div>
             
             {/* Plan */}
             <div className="mb-3">
@@ -449,10 +552,31 @@ export default function EditTrip() {
                   "แก้ไขทิป"
                 )}
               </button>
-
-              
-
             {/* </form> */}
+
+              {/* delete */}
+              <div className="mt-5 mb-3">
+                  <button
+                    type="button"
+                    className="btn btn-danger d-flex align-items-center justify-content-center p-2"
+                    disabled={isLoadingDelete}
+                    onClick={() => deleteTrip()}
+                  >
+                    {isLoadingDelete ? (
+                      <>
+                        <div className="spinner-border spinner-border-sm me-2" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                        กำลังลบ...
+                      </>
+                    ) : (
+                      <>
+                        <Trash size={18} className='me-2' />
+                        ลบ
+                      </>
+                    )}
+                  </button>
+              </div>
           </div>
         </div>
       </div>

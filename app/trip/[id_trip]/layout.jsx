@@ -16,6 +16,7 @@ export default function TripLayout({ children }) {
   const [userType, setUserType] = useState(null);
   const [userId, setUserId] = useState(null);
   const [nameTrip, setNameTrip] = useState(null);
+  const [statusTrip, setStatusTrip] = useState(null);
 
   useEffect(() => {
     fetch('/api/auth/check')
@@ -33,6 +34,7 @@ export default function TripLayout({ children }) {
                 setUserType(tripData.type);
                 setNameTrip(tripData.name_trip)
                 setAuthorized(true);
+                setStatusTrip(tripData.trip_status);
               } else {
                 router.push('/dashboard'); 
               }
@@ -61,7 +63,7 @@ export default function TripLayout({ children }) {
   }
 
   return (
-    <TripProvider value={{ userType, userId, id_trip , nameTrip}}>
+    <TripProvider value={{ userType, userId, id_trip , nameTrip , statusTrip}}>
       {children}
     </TripProvider>
   );

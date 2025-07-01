@@ -123,6 +123,11 @@ const WalletTransactionSchema = new Schema({
 
 // Trip schema (Main)
 const TripSchema = new Schema({
+  status: {
+    type: String,
+    enum: ['not_started', 'in_progress', 'completed', 'cancelled'],
+    default: 'not_started',
+  },
   name: { type: String },
   description: { type: String },
   start_date: TimeWithZoneSchema,

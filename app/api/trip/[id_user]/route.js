@@ -22,7 +22,7 @@ export async function GET(req, { params }) {
   const { id_user } = await params;
 
   try {
-    const trips = await Trip.find({ 'user.id_user': id_user }).select('name start_date end_date profile_image user country');
+    const trips = await Trip.find({ 'user.id_user': id_user }).select('name start_date end_date profile_image user country status');
 
     return NextResponse.json(trips);
   } catch (err) {

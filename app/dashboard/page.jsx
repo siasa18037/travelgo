@@ -48,27 +48,29 @@ export default function DashboardPage() {
   };
 
 
-  const getTripStatusMessage = (startDateObj, endDateObj) => {
-    const now = new Date();
-    const start = new Date(startDateObj?.datetime);
-    const end = new Date(endDateObj?.datetime);
-
-    if (now < start) return "เร็วๆ นี้";
-    if (now >= start && now <= end) return "กำลังเดินทาง";
-    return "จบแล้ว";
+  const getTripStatusMessage = (status) => {
+    if(status == 'not_started'){
+      return "เร็วๆ นี้"
+    }else if(status == 'in_progress'){
+      return "กำลังเดินทาง"
+    }else if(status == 'completed'){
+      return "จบแล้ว"
+    }else if(status == 'cancelled'){
+      return "ยกเลิก"
+    }
   };
 
-  const getTripStatusStyle = (startDateObj, endDateObj) => {
-    const now = new Date();
-    const start = new Date(startDateObj?.datetime);
-    const end = new Date(endDateObj?.datetime);
-
-    if (now < start) return 'bg-warning-subtle text-warning-emphasis border border-warning';
-    if (now >= start && now <= end) return 'bg-success-subtle text-success-emphasis border border-success';
-    return 'bg-secondary-subtle text-secondary-emphasis border border-secondary';
+  const getTripStatusStyle = (status) => {
+    if(status == 'not_started'){
+      return "bg-warning-subtle text-warning-emphasis border border-warning"
+    }else if(status == 'in_progress'){
+      return "bg-success-subtle text-success-emphasis border border-success"
+    }else if(status == 'completed'){
+      return 'bg-secondary-subtle text-secondary-emphasis border border-secondary'
+    }else if(status == 'cancelled'){
+      return 'bg-danger-subtle text-danger-emphasis border border-danger'
+    }
   };
-
-
 
   return (
     <main>
@@ -106,9 +108,9 @@ export default function DashboardPage() {
                       alt={trip.name}
                     />
                     <p
-                      className={`position-absolute top-0 end-0 m-2 card-text small align-items-center rounded px-2 py-1 ${getTripStatusStyle(trip.start_date, trip.end_date)}`}
+                      className={`position-absolute top-0 end-0 m-2 card-text small align-items-center rounded px-2 py-1 ${getTripStatusStyle(trip.status)}`}
                     >
-                      {getTripStatusMessage(trip.start_date, trip.end_date)}
+                      {getTripStatusMessage(trip.status)}
                     </p>
                   </div>
                   <div className="card-body">

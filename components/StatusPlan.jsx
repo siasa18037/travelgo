@@ -12,7 +12,7 @@ export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan , sta
     const [loading, setLoading] = useState(true);
     const [statusTime, setStatusTime] = useState(null);
     const [statusEndTime, setStatusEndTime] = useState(null);
-
+    
 
     useEffect(() => {
         if (!startTime || !endTime) return;

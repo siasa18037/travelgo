@@ -22,6 +22,7 @@ export async function GET(req, { params }) {
     ok: true,
     type: user.type,
     name_trip : trip.name,
+    trip_status : trip.status,
     status: 200
   });
 }
