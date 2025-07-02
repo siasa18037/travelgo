@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showErrorToast, showSuccessToast, confirmBox ,confirmDelete} from "@/lib/swal"; // เพิ่ม confirmBox
-import { Wallet, CircleDollarSign, Handshake, HandCoins, X, CheckCircle, XCircle, Calendar, User, Info , Trash,QrCode , Route} from 'lucide-react';
+import { Wallet, CircleDollarSign, Handshake, HandCoins, X, CheckCircle, XCircle, Calendar, User, Info , Trash,QrCode} from 'lucide-react';
 import './ShowDetailBox.css'
-import Link from 'next/link';
 
 // 1. (แก้ไข) เพิ่ม user_list เข้าไปใน props
-export default function ShowDetailBox({ userId, id_trip, data, onClose, onSuccess, user_list , exchangeRates }) {
+export default function ShowDetailBox({ userId, id_trip, id_plan , data, onClose, onSuccess, user_list , exchangeRates }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
@@ -165,23 +164,6 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                     <div className="detail-item d-flex align-items-center"><Calendar size={16} /><span className="ms-2"><b>วันที่:</b> {formatDate(data.time)}</span></div>
                     <div className="detail-item d-flex align-items-center"><User size={16} /><span className="ms-2"><b>จ่ายโดย:</b> {host.name}</span></div>
                     {data.note && <div className="detail-item mt-1 d-flex align-items-center"><Info size={16} /><span className="ms-2"><b>โน้ต:</b> {data.note}</span></div>}
-                    {data?.plan_id && (
-                        <div className="detail-item">
-                            <Route size={16} />
-                            <span className="ms-2"><b>Plan: </b> 
-                            <Link href={`/trip/${id_trip}/plan/${data?.plan_id}`}>
-                                <span className="ms-2 badge input-outline-dark">
-                                    See My Plan
-                                </span>
-                            </Link>
-                            <Link href={`/trip/${id_trip}/wallet/plan/${data?.plan_id}`}>
-                                <span className="ms-2 badge input-outline-dark">
-                                    See Plan Wallet
-                                </span>
-                            </Link>
-                            </span>
-                        </div>
-                    )}
                     <div className="mt-4 text-center">
                         {data.host === userId && (
                             <button
@@ -242,24 +224,7 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
                         )}
                     </div>
                      {data.note && <div className="detail-item d-flex align-items-center mt-1"><Info size={16} /><span className="ms-2"><b>โน้ต:</b> {data.note}</span></div>}
-                    
-                    {data?.plan_id && (
-                        <div className="detail-item">
-                            <Route size={16} />
-                            <span className="ms-2"><b>Plan: </b> 
-                            <Link href={`/trip/${id_trip}/plan/${data?.plan_id}`}>
-                                <span className="ms-2 badge input-outline-dark">
-                                    See My Plan
-                                </span>
-                            </Link>
-                            <Link href={`/trip/${id_trip}/wallet/plan/${data?.plan_id}`}>
-                                <span className="ms-2 badge input-outline-dark">
-                                    See Plan Wallet
-                                </span>
-                            </Link>
-                            </span>
-                        </div>
-                    )}
+
                     <div className="mt-4 text-center">
                     {data.host === userId && (
                         <button
@@ -299,6 +264,7 @@ export default function ShowDetailBox({ userId, id_trip, data, onClose, onSucces
             );
         }
     };
+
 
     return (
         <div className="overlay" onClick={onClose} >

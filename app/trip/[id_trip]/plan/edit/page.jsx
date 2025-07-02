@@ -640,7 +640,7 @@ export default function EditPlan() {
                         <span>Start</span>
                         {/* เลือกวัน */}
                         <select
-                          className="form-select border-secondary flex-fill"
+                          className="form-select border-secondary flex-fill input-outline-dark"
                           value={getLocalDateString(item.start, fallbackTimezone)}
                           disabled={index === 0}
                           onChange={(e) => {
@@ -680,7 +680,7 @@ export default function EditPlan() {
                         {/* เลือกเวลา */}
                         <input
                           type="time"
-                          className="form-control border-secondary flex-fill"
+                          className="form-control border-secondary flex-fill input-outline-dark"
                           value={getLocalTimeString(item.start, fallbackTimezone)}
                           disabled={index === 0}
                           onChange={(e) => {
@@ -787,13 +787,13 @@ export default function EditPlan() {
                     </div>
                     <div className="left d-flex align-items-center gap-2">
                       <button 
-                        className="btn d-flex align-items-center btn-outline-dark" 
+                        className="btn d-flex align-items-center input-outline-dark" 
                         onClick={() => ShowMapShare('location', index)}
                       >
                         ดูตำแหน่ง
                       </button>
                       <button 
-                          className="btn d-flex align-items-center btn-outline-dark" 
+                          className="btn d-flex align-items-center input-outline-dark" 
                           onClick={() => seemore(index)}
                         >
                           ตั้งค่าเพิ่มเติม
@@ -1098,11 +1098,11 @@ export default function EditPlan() {
           {/* Add button */}
           <div className="mb-3">
             <div className="d-flex align-items-center justify-content-center gap-2">
-              <button onClick={addMainSection} className="btn d-flex align-items-center btn-outline-dark">
+              <button onClick={addMainSection} className="btn d-flex align-items-center input-outline-dark ">
                 <Plus className='me-1' size={20} />
                 เพิ่มสถานที่ กิจกรรม
               </button>
-              <button onClick={addTransportSection} className="btn d-flex align-items-center btn-outline-dark">
+              <button onClick={addTransportSection} className="btn d-flex align-items-center input-outline-dark ">
                 <Plus className='me-1' size={20} />
                 เพิ่มการเดินทาง
               </button>

@@ -5,7 +5,7 @@ import Select from 'react-select';
 import axios from 'axios';
 
 // รับ userId เข้ามาเพื่อใช้กรอง
-export default function CreateWallet({ userId, id_trip, id_plan = '', onClose , user_list , onSuccess }) {
+export default function CreateWallet({ userId, id_trip, id_plan = '' , onClose , user_list , onSuccess , plan_price = null, notes = '' ,perDescription = ''}) {
   const [type, setType] = useState('loan')
   const [loanMode, setLoanMode] = useState('lend') //lend , borrow
   const [note, setNote] = useState('')
@@ -140,6 +140,16 @@ export default function CreateWallet({ userId, id_trip, id_plan = '', onClose , 
   }));
 
  useEffect(() => {
+    if(plan_price){
+        setAmount(plan_price)
+    }
+    if(notes){
+        setNote(notes)
+    }
+    if(perDescription){
+        setDescription(perDescription)
+    }
+
     const fetchCurrencies = async () => {
       try {
         const response = await axios.get('https://api.frankfurter.app/latest?from=THB');
@@ -151,6 +161,7 @@ export default function CreateWallet({ userId, id_trip, id_plan = '', onClose , 
         showErrorToast("ไม่สามารถโหลดรายการสกุลเงินได้");
       }
     };
+
     fetchCurrencies();
   }, []);
 

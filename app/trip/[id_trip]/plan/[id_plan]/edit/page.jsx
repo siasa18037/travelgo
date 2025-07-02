@@ -32,6 +32,16 @@ export default function EditPlanItem() {
   const mapInitialized = useRef(false);
 
   useEffect(() => {
+    setPlanItemForm({
+       ...planItemForm,
+        amount: {
+          price : 0,
+          currency: 'THB'
+        }
+    })
+  }, [])
+
+  useEffect(() => {
     if (userType !== 'admin') {
       router.push(`/trip/${userId}/${id_trip}/plan/edit`);
       return;
@@ -46,7 +56,15 @@ export default function EditPlanItem() {
           router.push(`/trip/${id_trip}/plan`);
           return;
         }else{
-          setPlanItemForm(response.data);
+          const resData = response.data
+          setPlanItemForm(resData)
+          setPlanItemForm({
+            ...resData,
+            amount : {
+              price : resData?.amount?.price || 0,
+              currency: resData?.amount?.currency || 'THB',
+            }
+          });
           // console.log(response.data)
         }
       } catch (error) {
@@ -725,7 +743,7 @@ export default function EditPlanItem() {
                     type="number" 
                     min={0}
                     className="form-control input-outline-dark" 
-                    value={planItemForm.amount?.price || 0}
+                    value={planItemForm?.amount?.price}
                     onChange={(e) => setPlanItemForm({
                       ...planItemForm,
                       amount: {
@@ -818,9 +836,9 @@ export default function EditPlanItem() {
                   </Link>
                   <Link
                     className="btn input-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
-                    href={`/trip/${id_trip}/wallet/plan/${id_plan}/edit`}
+                    href={`/trip/${id_trip}/wallet/plan/${id_plan}`}
                   >
-                    Edit wallet
+                    This plan wallet
                   </Link>
                 </div>
               </div>

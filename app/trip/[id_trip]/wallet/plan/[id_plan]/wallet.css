@@ -3,7 +3,7 @@
   border: 1px solid var(--bs-emphasis-color); /* ปรับตามธีม */
   color: var(--bs-emphasis-color);
   border-radius: 0.25rem;
-  padding: 0.375rem 0.75rem;
+  padding: 0.25rem 0.6rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -38,4 +38,15 @@
 .div-outline-white:hover {
   background-color: var(--bs-body-bg);   /* พื้นหลังตามธีม */
   color: var(--bs-body-color);           /* ตัวอักษรตามธีม */
+}
+
+
+
+.status-pill {
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
