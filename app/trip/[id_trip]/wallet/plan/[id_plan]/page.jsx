@@ -29,22 +29,36 @@ export default function WalletPage() {
   const [planItem , setPlanItem] = useState(null);
 
   const fetchData = useCallback(async () => {
-    if (!userId || !id_trip) return; 
+    if (!userId || !id_trip) return;
+
     try {
-      const [txRes, userRes , planRes] = await Promise.all([
+      const [txRes, userRes] = await Promise.all([
         axios.get(`/api/trip/${userId}/${id_trip}/wallet_transaction?plan_id=${id_plan}`),
-        axios.get(`/api/trip/${userId}/${id_trip}/user`),
-        axios.get(`/api/trip/${userId}/${id_trip}/plan/${id_plan}`)
+        axios.get(`/api/trip/${userId}/${id_trip}/user`)
       ]);
+
       setTransactions(txRes.data);
       setUsers(userRes.data);
-      setPlanItem(planRes.data)
+
+      try {
+        const planRes = await axios.get(`/api/trip/${userId}/${id_trip}/plan/${id_plan}`);
+        setPlanItem(planRes.data);
+      } catch (planError) {
+        if (planError.response?.status === 404) {
+          showErrorToast('ไม่พบแผนนี้')
+          router.push(`/trip/${id_trip}/wallet`);
+        } else {
+          console.error('Error fetching plan:', planError);
+        }
+      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
-    }finally{
-        setIsLoading(false)
+    } finally {
+      setIsLoading(false);
     }
-  }, [userId, id_trip, id_plan]); 
+  }, [userId, id_trip, id_plan]);
+
 
   useEffect(() => {
 
