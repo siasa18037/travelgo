@@ -346,7 +346,7 @@ export default function MapShare({ data, type, onClose }) {
                             </div>
                             
                             {/* Summary */}
-                            <div className="mt-3 p-3 bg-light rounded">
+                            <div className="mt-3 p-3 rounded">
                                 <div className="d-flex align-items-center mb-2">
                                     {getTransportIcon()}
                                     <span className="ms-2 fw-bold">{getTransportName()}</span>

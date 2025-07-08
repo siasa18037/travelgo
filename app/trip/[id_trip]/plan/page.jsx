@@ -6,9 +6,10 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
-import StatusPlan from '@/components/StatusPlan';
+
 import {PlusCircle,SquarePen ,Route , SkipForward,CircleX} from 'lucide-react'
 import './plan.css'
+import PlanList from './PlanList'
 
 export default function Plan() {
   const router = useRouter();
@@ -66,9 +67,9 @@ export default function Plan() {
   if (loading) return <Loading />;
 
   return (
-    <div className="container py-2">
+    <div className="container">
       {/* head */}
-      <div className="mb-3">
+      <div className="mb-3 plan-header">
           <div className="d-flex justify-content-between align-items-center flex-wrap">
             <div>
               <h3 className="fw-bold mb-1 d-flex align-items-center gap-2"><Route size={28}/>Plan</h3>
@@ -89,7 +90,7 @@ export default function Plan() {
               {statusTrip == 'in_progress' && (
                 <button
                   disabled
-                  className="btn input-outline-dark d-flex align-items-center mt-2 mt-md-0 gap-2 text-primary"
+                  className="btn input-outline-dark d-flex align-items-center mt-2 mt-md-0 gap-2 text-primary btn-sm"
                 >
                   <div className="spinner-grow text-primary spinner-grow-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -123,7 +124,7 @@ export default function Plan() {
               {userType == 'admin' && (
                 <button
                   onClick={() => router.push(`/trip/${id_trip}/plan/edit`)}
-                  className="btn input-outline-dark d-flex align-items-center mt-2 mt-md-0"
+                  className="btn input-outline-dark d-flex align-items-center mt-2 mt-md-0 btn-sm"
                 >
                   <SquarePen className="me-2" size={18}/>
                   Edit plan
@@ -134,7 +135,7 @@ export default function Plan() {
                   <div className="btn-group">
                     <button
                       onClick={() => nextPlan()} 
-                      className="btn custom-dark-hover d-flex align-items-center mt-2 mt-md-0 gap-2"
+                      className="btn custom-dark-hover d-flex align-items-center mt-2 mt-md-0 gap-2 btn-sm"
                       disabled={isUpdating}
                     >
                       {isUpdating ? (
@@ -151,7 +152,7 @@ export default function Plan() {
                     </button>
                     <button 
                       type="button" 
-                      className="btn custom-dark-hover dropdown-toggle dropdown-toggle-split mt-2 mt-md-0" 
+                      className="btn custom-dark-hover dropdown-toggle dropdown-toggle-split mt-2 mt-md-0 " 
                       data-bs-toggle="dropdown" 
                       aria-expanded="false"
                       disabled={isUpdating} 
@@ -175,29 +176,16 @@ export default function Plan() {
             </div>
           </div>
       </div>
-
-      {planList.length === 0 ? (
-        <div className="alert alert-info">ไม่มีแผนการเดินทาง</div>
-      ) : (
-        planList.map((plan) => (
-          <div
-            className="card mb-3 shadow-sm cursor-pointer"
-            key={plan._id}
-            onClick={() => router.push(`/trip/${id_trip}/plan/${plan._id}`)}
-            style={{ cursor: 'pointer' }}
-          >
-            <div className="card-body">
-
-              <StatusPlan mode={'3'} id_user={userId} status={plan.status} start={plan.start}  end={plan.end}/>
-              
-              <h5 className="card-title mt-2">{plan.name || '(ไม่มีชื่อ)'}</h5>
-              <p className="card-text">
-                <strong>ประเภท:</strong> {plan.type}<br />
-              </p>
-            </div>
+      
+      <div className="row gap-3 flex-column flex-md-row">
+          <div className="col">
+              <PlanList plan_list={planList} />
           </div>
-        ))
-      )}
+          <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
+              map
+          </div>
+      </div>  
+      
     </div>
   );
 }

@@ -1066,13 +1066,13 @@ export default function EditPlan() {
                       {/* Buttons */}
                       <div className="col-12 col-md-auto d-flex justify-content-md-end gap-2">
                         <button
-                          className="btn d-flex align-items-center btn-outline-dark"
+                          className="btn d-flex align-items-center input-outline-dark"
                           onClick={() => ShowMapShare('navigation', index)}
                         >
                           ดูเส้นทาง
                         </button>
                         <button 
-                          className="btn d-flex align-items-center btn-outline-dark" 
+                          className="btn d-flex align-items-center input-outline-dark" 
                           onClick={() => seemore(index)}
                         >
                           ตั้งค่าเพิ่มเติม
