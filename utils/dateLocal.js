@@ -111,17 +111,46 @@ export function getStatusEndTimeString(end, fallbackTimezone) {
   const minutesLeft = differenceInMinutes(endDate, nowDate);
 
   if (minutesLeft > 0 && minutesLeft <= 15) {
-    return <h6 className='mb-0 text-warning'>(เหลือเวลา {minutesLeft} นาที)</h6>;
+    return <h6 className='mb-0 text-warning small'>(เหลือเวลา {minutesLeft} นาที)</h6>;
   }
 
   if (minutesLeft == 0 ) {
-    return <h6 className='mb-0 text-warning'>(ครบเวลาเเล้ว)</h6>;
+    return <h6 className='mb-0 text-warning small'>(ครบเวลาเเล้ว)</h6>;
   }
 
   if (minutesLeft < 0) {
     const overdue = Math.abs(minutesLeft);
-    return <h6 className='mb-0 text-danger'>(เกินมา {overdue} นาที)</h6>;
+    return <h6 className='mb-0 text-danger small'>(เกินมา {overdue} นาที)</h6>;
   }
 
   return null; // ไม่แสดงอะไร
+}
+
+
+export function getDatesListFromStartEnd(start, end) {
+  // ตรวจสอบว่ามีข้อมูล datetime ครบถ้วนหรือไม่
+  if (!start?.datetime || !end?.datetime) {
+    return [];
+  }
+
+  const dates = [];
+  const startDate = new Date(start.datetime);
+  const endDate = new Date(end.datetime);
+
+  // สร้าง Date object ใหม่สำหรับวนลูป เพื่อไม่ให้กระทบค่าเดิม
+  let currentDate = new Date(startDate);
+
+  // ปรับเวลาให้เป็นเที่ยงคืน (UTC) เพื่อให้เปรียบเทียบเฉพาะวันที่ได้ถูกต้อง
+  currentDate.setUTCHours(0, 0, 0, 0);
+  endDate.setUTCHours(0, 0, 0, 0);
+
+
+  while (currentDate <= endDate) {
+    // เพิ่มสำเนาของวันที่ปัจจุบันลงในอาร์เรย์
+    dates.push(new Date(currentDate));
+    // เลื่อนไปวันถัดไป
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
+
+  return dates;
 }

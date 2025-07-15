@@ -9,6 +9,9 @@ export async function PUT(req, { params }) {
 
   const url = new URL(req.url);
   const mode = url.searchParams.get('mode'); // 'skip' or 'cancel'
+  const mode_data = url.searchParams.get('data'); // 'some' 
+
+
 
   if (!mongoose.Types.ObjectId.isValid(id_trip)) {
     return NextResponse.json({ message: 'Invalid Trip ID' }, { status: 400 });
@@ -65,9 +68,50 @@ export async function PUT(req, { params }) {
       plans[nextActivePlanIndex].status = 'in_progress';
     }
 
+    // --- ขั้นตอนที่ 4: ตรวจสอบเพื่ออัปเดตสถานะ Trip หากทุก Plan เสร็จสิ้นแล้ว ---
+    const hasRemainingPlans = plans.some(
+      p => p.status === 'not_started' || p.status === 'in_progress'
+    );
+
+    // ถ้าไม่มี Plan ที่กำลังทำหรือรอทำอยู่เลย ให้ถือว่า Trip นี้เสร็จสมบูรณ์
+    if (!hasRemainingPlans && trip.status !== 'completed') {
+      trip.status = 'completed';
+    }
+
     // บันทึกการเปลี่ยนแปลงทั้งหมด
     await trip.save();
+
+    if(mode_data=='some'){
+    const somePlanData = trip.plan.map(p => {
+      // สร้าง object ใหม่สำหรับ data ที่จะถูกกรอง
+      const filteredData = {};
+
+      // ตรวจสอบและเพิ่ม property ถ้ามีอยู่ใน plan.data
+      if (p.data) {
+        if (p.data.location) filteredData.location = p.data.location;
+        if (p.data.destination) filteredData.destination = p.data.destination;
+        if (p.data.origin) filteredData.origin = p.data.origin;
+        if (p.data.transport_type) filteredData.transport_type = p.data.transport_type;
+      }
+      
+      // คืนค่า object ใหม่ที่มีเฉพาะข้อมูลที่ต้องการ
+      return {
+        _id: p._id,
+        name: p.name,
+        start: p.start,
+        end: p.end,
+        type: p.type,
+        status: p.status,
+        data: filteredData
+      };
+    });
+
+    return NextResponse.json({ message: 'Plan updated successfully', plan: somePlanData }, { status: 200 });
+
+  }else{
     return NextResponse.json({ message: 'Plan updated successfully', plan: trip.plan }, { status: 200 });
+  }
+    
 
   } catch (err) {
     console.error('Error updating plan status:', err);

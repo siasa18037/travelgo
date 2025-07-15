@@ -1,18 +1,85 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // เพิ่มส่วนนี้: import useRef
+import axios from 'axios';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import StatusPlan from '@/components/StatusPlan';
 import { useTrip } from '@/components/TripContext';
 import { useParams, useRouter } from 'next/navigation';
-import { MapPin, Route ,PlaneTakeoff,PlaneLanding,Compass,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike ,CircleArrowUp,CircleArrowDown,MoveRight ,Plus ,ClockAlert} from 'lucide-react';
+import { MapPin, Wallet ,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike } from 'lucide-react';
 import {getLocalTimeString,getLocalToThaiDate} from '@/utils/dateLocal'
 import MapShare from '@/components/MapShare'
 
-export default function PlanList({ plan_list }) {
+export default function PlanList({ plan_list , trip_status , fillter='' }) {
   const router = useRouter();
   const { userType, userId, id_trip ,statusTrip} = useTrip();
   const [mapSharedata,setMapSharedata] = useState();
-  const [mapShareBox , setMapShareBox] = useState(false); 
+  const [mapShareBox , setMapShareBox] = useState(false);
   const [mapShareType,setMapShareType] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const inProgressRef = useRef(null);
+
+    useEffect(() => {
+        if (fillter && fillter.trim() !== '') return;
+            if (inProgressRef.current) {
+            inProgressRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, [plan_list, fillter]);
+
+  useEffect(() => {
+    if (!fillter || fillter.trim() === '') return;
+
+    const searchTerm = fillter.toLowerCase().trim();
+
+    const foundPlan = plan_list.find(plan => {
+      // ตรวจสอบชื่อ plan
+      const planName = plan.name?.toLowerCase() || '';
+      if (planName.includes(searchTerm)) return true;
+
+      // ตรวจสอบชื่อสถานที่ (สำหรับ type ที่ไม่ใช่ transport)
+      const locationName = plan.data?.location?.name?.toLowerCase() || '';
+      if (locationName.includes(searchTerm)) return true;
+
+      // ตรวจสอบชื่อปลายทาง (สำหรับ type 'transport')
+      const destinationName = plan.data?.destination?.name?.toLowerCase() || '';
+      if (destinationName.includes(searchTerm)) return true;
+
+      // ตรวจสอบวันที่และเวลาที่แปลงเป็นสตริงแล้ว
+      const thaiDate = getLocalToThaiDate(plan.start).toLowerCase();
+      const timeString = getLocalTimeString(plan.start).toLowerCase();
+      if (thaiDate.includes(searchTerm) || timeString.includes(searchTerm)) return true;
+
+      return false;
+    });
+
+    if (foundPlan) {
+      const element = document.getElementById(foundPlan._id);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }
+  }, [fillter, plan_list]); 
+
+  const handleStartTrip = async () => {
+    setIsLoading(true);
+
+    try {
+      await axios.put(`/api/trip/${userId}/${id_trip}`, {status:'in_progress'});
+      location.reload();
+      showSuccessToast("Trip Started");
+    } catch (error) {
+      console.error("Error update trip:", error);
+      showErrorToast("Failed to Trip Started");
+    } finally {
+      setIsLoading(false);
+    }
+
+  };
 
   const ShowMapShare = (type, item) => {
     if (type === 'location') {
@@ -43,25 +110,54 @@ export default function PlanList({ plan_list }) {
             <div className="row mx-2">
                 <ul className="timeline">
                     <li className="timeline-item" >
-                        <span className="timeline-icon"></span>
+                        <span
+                            className="timeline-icon"
+                            style={{
+                                    backgroundColor:
+                                    trip_status === 'in_progress' ? '#198754' :
+                                    trip_status === 'completed'   ? '#198754' :
+                                    trip_status === 'cancelled'   ? '#dc3545' :
+                                    trip_status === 'not_started' ? 'var(--bs-body-bg)' :
+                                    ''
+                                }}
+                        ></span>
                         <div className="timeline-body">
                             <div className="timeline-content">
                                 <div className="card border-0">
-                                    <h4 className="mb-0">Start</h4>
+                                    <div className="d-flex align-items-center gap-4">
+                                        <h4 className="mb-0">Start</h4>
+                                        {trip_status === 'not_started' && (
+                                            <button className="btn btn-success" onClick={()=>handleStartTrip()} disabled={isLoading}>
+                                                {isLoading ? (
+                                                    <>
+                                                        <div className="spinner-border spinner-border-sm me-2" role="status">
+                                                        <span className="visually-hidden">Loading...</span>
+                                                        </div>
+                                                        กำลังเริ่มการเดินทาง...
+                                                    </>
+                                                    ) : (
+                                                    <>
+                                                        เริ่มการเดินทาง
+                                                    </>
+                                                    )}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </li>
                     {plan_list.length === 0 ? (
-                        <div className="">ไม่มีแผนการเดินทาง</div>
+                        <div className=""></div>
                     ) : (
                         plan_list.map((plan) => (
-                        <li 
+                        <li
                             className="timeline-item"
                             key={plan._id}
+                            id={plan._id}
+                            ref={plan.status === 'in_progress' ? inProgressRef : null}
                             onClick={() => router.push(`/trip/${id_trip}/plan/${plan._id}`)}
                             style={{ cursor: 'pointer' }}
-                            id={plan.status}
                         >
                             <span
                                 className="timeline-icon"
@@ -122,9 +218,9 @@ export default function PlanList({ plan_list }) {
                                             <StatusPlan mode={'3'} id_user={userId} status={plan.status} start={plan.start}  end={plan.end}/>
                                         </div>
                                         {plan.type == 'transport' ? (
-                                            <h4 className="mb-1">{plan.name || `เดินทางไป ${plan.data?.destination?.name || ''}`}</h4>
+                                            <h5 className="mb-1">{plan.name || `เดินทางไป ${plan.data?.destination?.name || ''}`}</h5>
                                         ):(
-                                            <h4 className="mb-1">{plan.name || `ไม่มีชื่อ`}</h4>
+                                            <h4 className="mb-1">{plan.name || plan.data?.location?.name || `ไม่มีชื่อ`}</h4>
                                         )}
                                         {(plan.type != 'transport' && plan.data.location.name ) &&(
                                             <div className="d-flex align-items-center gap-1">
@@ -137,11 +233,21 @@ export default function PlanList({ plan_list }) {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation(); // สั่งให้หยุด Event ที่นี่
-                                                        router.push(`/trip/${id_trip}/plan`);
+                                                        router.push(`/trip/${id_trip}/plan/${plan._id}`);
                                                     }}
                                                     className="btn input-outline-dark d-flex align-items-center mt-2 mt-md-0 btn-sm"
                                                 >
                                                     Plan Detail
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // สั่งให้หยุด Event ที่นี่
+                                                        router.push(`/trip/${id_trip}/wallet/plan/${plan._id}`);
+                                                    }}
+                                                    className="btn input-outline-dark d-flex align-items-center mt-2 mt-md-0 btn-sm gap-1"
+                                                >
+                                                    <Wallet size={14}/>
+                                                    Plan Wallet
                                                 </button>
                                                 {plan.type != 'transport' && (
                                                     <button
@@ -177,7 +283,17 @@ export default function PlanList({ plan_list }) {
                         ))
                     )}
                     <li className="timeline-item" >
-                        <span className="timeline-icon"></span>
+                        <span
+                            className="timeline-icon"
+                            style={{
+                                    backgroundColor:
+                                    trip_status === 'in_progress' ? 'var(--bs-body-bg)' :
+                                    trip_status === 'completed'   ? '#198754' :
+                                    trip_status === 'cancelled'   ? '#dc3545' :
+                                    trip_status === 'not_started' ? 'var(--bs-body-bg)' :
+                                    ''
+                                }}
+                        ></span>
                         <div className="timeline-body">
                             <div className="timeline-content">
                                 <div className="card border-0">
@@ -193,8 +309,8 @@ export default function PlanList({ plan_list }) {
     {/* mapShareBox */}
     {mapShareBox && (
     <div className="modal-content">
-        <MapShare 
-        data={mapSharedata} 
+        <MapShare
+        data={mapSharedata}
         type={mapShareType}
         onClose={() => setMapShareBox(false)}
         />

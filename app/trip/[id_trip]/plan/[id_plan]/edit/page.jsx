@@ -57,13 +57,14 @@ export default function EditPlanItem() {
           return;
         }else{
           const resData = response.data
-          setPlanItemForm(resData)
+          const { checklist, ...rest } = resData;
+          setPlanItemForm(rest)
           setPlanItemForm({
-            ...resData,
-            amount : {
-              price : resData?.amount?.price || 0,
-              currency: resData?.amount?.currency || 'THB',
-            }
+            ...rest, 
+            amount: {
+              price: rest?.amount?.price || 0,
+              currency: rest?.amount?.currency || 'THB',
+            },
           });
           // console.log(response.data)
         }

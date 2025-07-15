@@ -41,17 +41,9 @@
   color: var(--bs-body-color);           /* ตัวอักษรตามธีม */
 }
 
-
-.plan-header {
+.fillter {
   position: sticky;
-  top: 56px; 
-  background-color: var(--bs-body-bg); 
-  z-index: 1020; 
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-}
-
-.right-box {
-  position: sticky;
-  top: 118px; 
+  top: 0; /* สามารถปรับค่าได้หากมี Navbar ด้านบน */
+  background-color: var(--bs-body-bg); /* สีพื้นหลังเพื่อไม่ให้เนื้อหาด้านล่างทะลุขึ้นมา */
+  z-index: 1020;
 }

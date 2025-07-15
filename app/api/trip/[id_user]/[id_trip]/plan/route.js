@@ -5,10 +5,13 @@ import { connectDB } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 
-// GET /api/trip/:id_user/:id_trip/plan
+// GET /api/trip/:id_user/:id_trip/plan?data=some
 export async function GET(req, { params }) {
   const { id_user, id_trip } = await params;
   await connectDB();
+
+  const url = new URL(req.url);
+  const mode = url.searchParams.get('data'); // 'some' 
 
   const trip = await Trip.findById(id_trip);
   if (!trip) return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
@@ -16,7 +19,37 @@ export async function GET(req, { params }) {
   const userExists = trip.user.some(u => u.id_user === id_user);
   if (!userExists) return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
 
-  return NextResponse.json(trip.plan, { status: 200 });
+  if(mode=='some'){
+    const somePlanData = trip.plan.map(p => {
+      // สร้าง object ใหม่สำหรับ data ที่จะถูกกรอง
+      const filteredData = {};
+
+      // ตรวจสอบและเพิ่ม property ถ้ามีอยู่ใน plan.data
+      if (p.data) {
+        if (p.data.location) filteredData.location = p.data.location;
+        if (p.data.destination) filteredData.destination = p.data.destination;
+        if (p.data.origin) filteredData.origin = p.data.origin;
+        if (p.data.transport_type) filteredData.transport_type = p.data.transport_type;
+      }
+      
+      // คืนค่า object ใหม่ที่มีเฉพาะข้อมูลที่ต้องการ
+      return {
+        _id: p._id,
+        name: p.name,
+        start: p.start,
+        end: p.end,
+        type: p.type,
+        status: p.status,
+        data: filteredData
+      };
+    });
+
+    return NextResponse.json(somePlanData, { status: 200 });
+
+  }else{
+    return NextResponse.json(trip.plan, { status: 200 });
+  }
+  
 }
 
 // PUT /api/trip/:id_user/:id_trip/plan - แก้ไขหรืออัปเดต plan ทั้งหมด

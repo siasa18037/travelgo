@@ -125,17 +125,17 @@ export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan , sta
                                     <div className={`spinner-grow text-success spinner-grow-sm`} role="status">
                                         <span className="visually-hidden">Loading...</span>
                                     </div>
-                                    <h5 className='mb-0 text-success'>On time</h5>
-                                    <h6 className='mb-0'>( ยังไม่เริ่ม )</h6>
+                                    <h5 className='mb-0 text-success small'>On time</h5>
+                                    <h6 className='mb-0 small'>( ยังไม่เริ่ม )</h6>
                                 </div>
                             ) : (
                                 <div className='d-flex align-items-center gap-2'>
                                     <div className={`spinner-grow text-warning spinner-grow-sm`} role="status">
                                         <span className="visually-hidden">Loading...</span>
                                     </div>
-                                    <h5 className='mb-0 text-warning'>Delay</h5>
-                                    <h5 className='mb-0 text-warning '>{statusTime?.time}</h5>
-                                    <h6 className='mb-0'>( ยังไม่เริ่ม )</h6>
+                                    <h5 className='mb-0 text-warning '>Delay</h5>
+                                    <h5 className='mb-0 text-warning'>{statusTime?.time}</h5>
+                                    <h6 className='mb-0 small'>( ยังไม่เริ่ม )</h6>
                                 </div>
                             )}
                         </>
