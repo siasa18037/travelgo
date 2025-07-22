@@ -77,6 +77,7 @@ export default function PlanSummary() {
   const assignedRefs = new Set();
 
   return (
+    <>
     <div className="PlanSummary container">
       <div className="plan-header">
         <h3 className="fw-bold mb-2 d-flex align-items-center gap-2"><Route size={28}/>Summary plan</h3>
@@ -209,5 +210,7 @@ export default function PlanSummary() {
         </div>
       )}
     </div>
+    
+    </>
   );
 }

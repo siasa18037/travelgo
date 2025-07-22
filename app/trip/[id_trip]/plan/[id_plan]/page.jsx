@@ -35,19 +35,8 @@ export default function PlanItem() {
         setLoading(false);
       }
     };
-
     fetchPlanItem();
   }, [userId, id_trip, id_plan]);
-
-  const handleSave = async () => {
-    try {
-      await axios.put(`/api/trip/${userId}/${id_trip}/plan/${id_plan}`, planItem);
-      showSuccessToast("อัปเดตแผนสำเร็จ");
-      router.push(`/trip/${userId}/${id_trip}/plan/edit`);
-    } catch (error) {
-      showErrorToast("อัปเดตแผนล้มเหลว");
-    }
-  };
 
   if (loading) return <Loading />;
 

@@ -1,52 +1,77 @@
-import { useState, useEffect, useRef } from "react"; // เพิ่มส่วนนี้: import useRef
+// PlanList.jsx
+
+import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import StatusPlan from '@/components/StatusPlan';
 import { useTrip } from '@/components/TripContext';
 import { useParams, useRouter } from 'next/navigation';
-import { MapPin, Wallet ,Hamburger ,Hotel ,Bus , CarFront , TrainFront , Plane ,Footprints,Bike } from 'lucide-react';
-import {getLocalTimeString,getLocalToThaiDate} from '@/utils/dateLocal'
+import { MapPin, Wallet, Hamburger, Hotel, Bus, CarFront, TrainFront, Plane, Footprints, Bike } from 'lucide-react';
+import { getLocalTimeString, getLocalToThaiDate } from '@/utils/dateLocal'
 import MapShare from '@/components/MapShare'
 
-export default function PlanList({ plan_list , trip_status , fillter='' }) {
+export default function PlanList({ plan_list, trip_status, fillter = '' }) {
   const router = useRouter();
-  const { userType, userId, id_trip ,statusTrip} = useTrip();
-  const [mapSharedata,setMapSharedata] = useState();
-  const [mapShareBox , setMapShareBox] = useState(false);
-  const [mapShareType,setMapShareType] = useState();
+  const { userType, userId, id_trip, statusTrip } = useTrip();
+  const [mapSharedata, setMapSharedata] = useState();
+  const [mapShareBox, setMapShareBox] = useState(false);
+  const [mapShareType, setMapShareType] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
+  // --- ✨ ส่วนที่แก้ไขและเพิ่มเติม ---
   const inProgressRef = useRef(null);
+  const prevInProgressIdRef = useRef(null); // Ref สำหรับเก็บ ID ของ plan in_progress ก่อนหน้า
+  const [shouldScroll, setShouldScroll] = useState(false); // State เพื่อสั่งให้เลื่อนหน้าจอ
 
-    useEffect(() => {
-        if (fillter && fillter.trim() !== '') return;
-            if (inProgressRef.current) {
-            inProgressRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    }, [plan_list, fillter]);
+  // 1. Effect นี้จะคอยตรวจจับว่า 'in_progress' plan เปลี่ยนไปหรือไม่
+  useEffect(() => {
+    // ถ้ามีการค้นหาอยู่ ให้หยุดการทำงานส่วนนี้
+    if (fillter && fillter.trim() !== '') {
+        setShouldScroll(false); // ปิดการเลื่อนเมื่อมีการค้นหา
+        return;
+    }
 
+    const inProgressPlan = plan_list.find(p => p.status === 'in_progress');
+    const currentInProgressId = inProgressPlan?._id || null;
+
+    // ถ้า ID ของ plan 'in_progress' ปัจจุบันไม่ตรงกับ ID ที่เก็บไว้
+    if (currentInProgressId && currentInProgressId !== prevInProgressIdRef.current) {
+      setShouldScroll(true); // ตั้งค่าให้เลื่อนหน้าจอ
+      prevInProgressIdRef.current = currentInProgressId; // อัปเดต ID ล่าสุด
+    } else if (!currentInProgressId) {
+      // กรณีไม่มี plan in_progress แล้ว
+      prevInProgressIdRef.current = null;
+    }
+  }, [plan_list, fillter]);
+
+  // 2. Effect นี้จะทำงานเมื่อ 'shouldScroll' เป็น true เท่านั้น
+  useEffect(() => {
+    if (shouldScroll && inProgressRef.current) {
+      inProgressRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+      setShouldScroll(false); // ปิดการสั่งเลื่อนหลังจากเลื่อนสำเร็จ
+    }
+  }, [shouldScroll]);
+  // --- ✨ สิ้นสุดส่วนที่แก้ไข ---
+
+  // Effect สำหรับการค้นหา (ยังคงเดิม)
   useEffect(() => {
     if (!fillter || fillter.trim() === '') return;
 
     const searchTerm = fillter.toLowerCase().trim();
 
     const foundPlan = plan_list.find(plan => {
-      // ตรวจสอบชื่อ plan
       const planName = plan.name?.toLowerCase() || '';
       if (planName.includes(searchTerm)) return true;
 
-      // ตรวจสอบชื่อสถานที่ (สำหรับ type ที่ไม่ใช่ transport)
       const locationName = plan.data?.location?.name?.toLowerCase() || '';
       if (locationName.includes(searchTerm)) return true;
 
-      // ตรวจสอบชื่อปลายทาง (สำหรับ type 'transport')
       const destinationName = plan.data?.destination?.name?.toLowerCase() || '';
       if (destinationName.includes(searchTerm)) return true;
 
-      // ตรวจสอบวันที่และเวลาที่แปลงเป็นสตริงแล้ว
       const thaiDate = getLocalToThaiDate(plan.start).toLowerCase();
       const timeString = getLocalTimeString(plan.start).toLowerCase();
       if (thaiDate.includes(searchTerm) || timeString.includes(searchTerm)) return true;
@@ -63,13 +88,12 @@ export default function PlanList({ plan_list , trip_status , fillter='' }) {
         });
       }
     }
-  }, [fillter, plan_list]); 
+  }, [fillter, plan_list]);
 
   const handleStartTrip = async () => {
     setIsLoading(true);
-
     try {
-      await axios.put(`/api/trip/${userId}/${id_trip}`, {status:'in_progress'});
+      await axios.put(`/api/trip/${userId}/${id_trip}`, { status: 'in_progress' });
       location.reload();
       showSuccessToast("Trip Started");
     } catch (error) {
@@ -78,7 +102,6 @@ export default function PlanList({ plan_list , trip_status , fillter='' }) {
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const ShowMapShare = (type, item) => {
@@ -103,6 +126,8 @@ export default function PlanList({ plan_list , trip_status , fillter='' }) {
     setMapShareBox(true);
   };
 
+  // ... ส่วนของ JSX return ยังคงเหมือนเดิม ไม่มีการเปลี่ยนแปลง ...
+  // ... (คัดลอกส่วน JSX ของคุณมาวางต่อที่นี่) ...
   return (
    <>
     <section className="bsb-timeline-2">

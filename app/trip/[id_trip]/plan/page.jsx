@@ -124,7 +124,7 @@ export default function Plan() {
       }
     }
 
-  console.log(planList)
+  // console.log(planList)
 
   if (loading) return <Loading />;
 

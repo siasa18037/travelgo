@@ -40,6 +40,8 @@ export async function GET(req, { params }) {
         end: p.end,
         type: p.type,
         status: p.status,
+        amount: p.amount,
+        Price_per_person: p.Price_per_person,
         data: filteredData
       };
     });

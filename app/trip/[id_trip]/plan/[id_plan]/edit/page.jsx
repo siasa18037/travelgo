@@ -123,10 +123,8 @@ export default function EditPlanItem() {
         }
         
         setLocationlist(list);
-
-        mapInitialized.current = true;
       }
-    }, [planItemForm]);
+    }, [planItemForm?.data?.location , planItemForm?.data?.origin]);
 
   const transportOptions = [
     { value: "public_transport", icon: <Bus size={18} /> },
@@ -157,7 +155,7 @@ export default function EditPlanItem() {
 
   if (loading) return <Loading />;
 
-  console.log(planItemForm)
+  // console.log(planItemForm)
 
   if(planItemForm){
     return (
@@ -314,7 +312,7 @@ export default function EditPlanItem() {
                             },
                           })
                       }} 
-                      value={planItemForm.data.location} 
+                      value={planItemForm.data?.location} 
                     />
                   </div>
                 )}

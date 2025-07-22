@@ -133,8 +133,8 @@ export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan , sta
                                     <div className={`spinner-grow text-warning spinner-grow-sm`} role="status">
                                         <span className="visually-hidden">Loading...</span>
                                     </div>
-                                    <h5 className='mb-0 text-warning '>Delay</h5>
-                                    <h5 className='mb-0 text-warning'>{statusTime?.time}</h5>
+                                    <h5 className='mb-0 text-warning small'>Delay</h5>
+                                    <h5 className='mb-0 text-warning small'>{statusTime?.time}</h5>
                                     <h6 className='mb-0 small'>( ยังไม่เริ่ม )</h6>
                                 </div>
                             )}
@@ -146,7 +146,7 @@ export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan , sta
                             <div className={`spinner-grow text-primary spinner-grow-sm`} role="status">
                                 <span className="visually-hidden">Loading...</span>
                             </div>
-                            <h5 className='mb-0 text-primary'>In progress</h5>
+                            <h5 className='mb-0 text-primary small'>In progress</h5>
                             {statusEndTime}
                         </div>
                     )}
@@ -154,7 +154,7 @@ export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan , sta
                     { currentStatus == 'completed' && (
                         <div className='d-flex align-items-center gap-2'>
                             <CheckCircle size={20} className='text-success'/>
-                            <h5 className='mb-0 text-success'>Completed</h5>
+                            <h5 className='mb-0 text-success small'>Completed</h5>
                         </div>
                     )}
                     {/* Skipped */}
@@ -163,14 +163,14 @@ export default function StatusPlan({ mode = '1', id_user, id_trip, id_plan , sta
                             <div className={`spinner-grow text-warning spinner-grow-sm`} role="status">
                                 <span className="visually-hidden">Loading...</span>
                             </div>
-                            <h5 className='mb-0 text-warning'>Skipped</h5>
+                            <h5 className='mb-0 text-warning small'>Skipped</h5>
                         </div>
                     )}
                     {/* Cancelled */}
                     { currentStatus == 'cancelled' && (
                         <div className='d-flex align-items-center gap-2'>
-                            <XCircle size={22} className='text-danger'/>
-                            <h5 className='mb-0 text-danger'>Cancelled</h5>
+                            <XCircle size={20} className='text-danger'/>
+                            <h5 className='mb-0 text-danger small'>Cancelled</h5>
                         </div>
                     )}
                     
