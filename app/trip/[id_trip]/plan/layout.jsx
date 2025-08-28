@@ -20,7 +20,7 @@ export default function PlanLayout({ children }) {
         <Link
           key="trip"
           href={`/trip/${id_trip}`}
-          className="text-body"
+          className="text-secondary"
           style={{ textDecoration: 'none' }}
         >
           {nameTrip}
@@ -35,7 +35,7 @@ export default function PlanLayout({ children }) {
           <Link
             key="plan"
             href={`/trip/${id_trip}/plan`}
-            className="text-body capitalize"
+            className="text-secondary capitalize"
             style={{ textDecoration: 'none' }}
           >
             plan
@@ -47,7 +47,7 @@ export default function PlanLayout({ children }) {
         // ใช้ key ที่ไม่ซ้ำกับตัวอื่น
         breadcrumbs.push(<span key="sep_summary" className="mx-2">&gt;</span>);
         breadcrumbs.push(
-          <span key="summary_text" className="text-body capitalize">
+          <span key="summary_text" className="text-secondary capitalize">
             Summary plan
           </span>
         );
@@ -57,7 +57,7 @@ export default function PlanLayout({ children }) {
         // ใช้ key ที่ไม่ซ้ำกับตัวอื่น
         breadcrumbs.push(<span key="sep_cost" className="mx-2">&gt;</span>);
         breadcrumbs.push(
-          <span key="cost_text" className="text-body capitalize">
+          <span key="cost_text" className="text-secondary capitalize">
             Summary Cost Plan
           </span>
         );
@@ -68,7 +68,7 @@ export default function PlanLayout({ children }) {
         // key="sep2" เดิมไม่ซ้ำอยู่แล้ว แต่เปลี่ยนเพื่อความสอดคล้อง
         breadcrumbs.push(<span key="sep_edit" className="mx-2">&gt;</span>);
         breadcrumbs.push(
-          <span key="edit_text" className="text-body capitalize">
+          <span key="edit_text" className="text-secondary capitalize ">
             edit
           </span>
         );
@@ -80,7 +80,7 @@ export default function PlanLayout({ children }) {
 
   return (
     <>
-      <nav className='container mt-3  items-center'>
+      <nav className='container mt-3  items-center text-secondary'>
         {generateBreadcrumbs()}
       </nav>
       {children}

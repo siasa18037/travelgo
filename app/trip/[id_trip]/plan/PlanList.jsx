@@ -181,9 +181,8 @@ export default function PlanList({ plan_list, trip_status, fillter = '' }) {
                             key={plan._id}
                             id={plan._id}
                             ref={plan.status === 'in_progress' ? inProgressRef : null}
-                            onClick={() => router.push(`/trip/${id_trip}/plan/${plan._id}`)}
-                            style={{ cursor: 'pointer' }}
                         >
+                            <div onClick={() => router.push(`/trip/${id_trip}/plan/${plan._id}`)} style={{ cursor: 'pointer' }}>
                             <span
                                 className="timeline-icon"
                                 style={{
@@ -302,6 +301,7 @@ export default function PlanList({ plan_list, trip_status, fillter = '' }) {
                                         )}
                                     </div>
                                 </div>
+                            </div>
                             </div>
                             </div>
                         </li>

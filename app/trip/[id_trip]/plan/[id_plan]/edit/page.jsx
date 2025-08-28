@@ -18,6 +18,7 @@ import TicketInputList from '@/components/TicketInputList'
 import MapMultiMarker from '@/components/MapMultiMarker'
 import Link from 'next/link';
 import StatusPlan from '@/components/StatusPlan';
+import ImageList from '@/components/ImageList'
 
 export default function EditPlanItem() {
   const router = useRouter();
@@ -155,7 +156,7 @@ export default function EditPlanItem() {
 
   if (loading) return <Loading />;
 
-  // console.log(planItemForm)
+  console.log(planItemForm)
 
   if(planItemForm){
     return (
@@ -810,10 +811,10 @@ export default function EditPlanItem() {
           </div>
           {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
-              <MapMultiMarker 
+              {/* <MapMultiMarker 
                 locations={locationlist} 
                 mode={planItemForm.type == 'transport' ? 'navigation' : 'markers'} 
-              />
+              /> */}
 
               {/* status */}
               <div className="my-3">
@@ -841,6 +842,9 @@ export default function EditPlanItem() {
                   </Link>
                 </div>
               </div>
+
+              {/* Image  */}
+              <ImageList data={planItemForm.image} id_user={userId} id_trip={id_trip} id_plan={id_plan}/>
           </div>
         </div>
       </div>
