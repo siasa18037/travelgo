@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showSuccessToast, showErrorToast , confirmDelete} from "@/lib/swal";
 import Loading from '@/components/Loading';
-import { Ticket, MapPin, PlaneTakeoff, Calendar, Clock, PlaneLanding, User, FileText ,Share2,Route ,Earth,CircleDollarSign,Trash,OctagonX} from 'lucide-react';
+import { Ticket, MapPin, PlaneTakeoff, Calendar, Clock, PlaneLanding, User, FileText ,Share2,Route ,Earth,CircleDollarSign,Trash,Link2 } from 'lucide-react';
 import './edit.css';
 import UploadButton from '@/components/UploadButton'; 
 import { timezones } from '@/lib/timezone';
@@ -48,7 +48,8 @@ export default function EditTicketItemPage() {
       timezone: "Asia/Bangkok"
     },
     img: '',
-    location_use: ''
+    location_use: '',
+    ticket_link: ''
   });
 
   useEffect(() => {
@@ -109,6 +110,7 @@ export default function EditTicketItemPage() {
 
         setForm(response.data)
         showSuccessToast("Update successfully!");
+        router.push(`/trip/${id_trip}/ticket/${id_ticket}`)
 
 
     } catch (err) {
@@ -369,6 +371,20 @@ export default function EditTicketItemPage() {
                     ))}
                 </select>
                 </div>
+              </div>
+
+              {/* ticket link */}
+              <div className="mb-3">
+                <label htmlFor="location_use" className="form-label d-flex align-items-center gap-1">
+                  <Link2 className="me-1" size={18} /> Ticket Link URL
+                </label>
+                <input
+                  type="text"
+                  name="ticket_link"
+                  value={form.ticket_link}
+                  onChange={handleChange}
+                  className="form-control input-outline-dark"
+                />
               </div>
 
               {/* detail */}

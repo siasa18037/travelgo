@@ -42,6 +42,18 @@ const TransportDataSchema = new Schema({
   },
   origin: LocationSchema,
   destination: LocationSchema,
+  booking_ID : String,
+  booking_PNR : String,
+  booking_Pin : String,
+  booking_airline : String,
+  booking_baggage : String,
+  booking_carno : String,
+  booking_date : String,
+  booking_flightno : String,
+  booking_from : String,
+  booking_name : String,
+  booking_note : String,
+  booking_route : String,
 });
 
 const EatOrActivityDataSchema = new Schema({
@@ -89,7 +101,6 @@ const UserTripSchema = new Schema({
   type: { type: String, enum: ['admin', 'user'], default: 'user' }
 });
 
-
 // TicketPass schema
 const TicketPassSchema = new Schema({
   type: { type: String}, //public , private , [id_user]
@@ -100,7 +111,9 @@ const TicketPassSchema = new Schema({
   start: TimeWithZoneSchema,
   end: TimeWithZoneSchema,
   img: { type: String },
-  location_use: { type: String }
+  location_use: { type: String },
+  ticket_link: {type: String},
+  host: { type: String },
 }, { timestamps: true });
 
 // WalletTransaction schema

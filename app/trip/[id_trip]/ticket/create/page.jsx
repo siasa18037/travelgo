@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
-import { Ticket, MapPin, PlaneTakeoff, Calendar, Clock, PlaneLanding, User, FileText ,Share2,Route ,Earth,CircleDollarSign} from 'lucide-react';
+import { Ticket, MapPin, PlaneTakeoff, Calendar, Clock, PlaneLanding, User, FileText ,Share2,Route ,Earth,CircleDollarSign,Link2} from 'lucide-react';
 import './create.css';
 import UploadButton from '@/components/UploadButton'; 
 import { timezones } from '@/lib/timezone';
@@ -47,7 +47,9 @@ export default function CreateTicketPage() {
       timezone: "Asia/Bangkok"
     },
     img: '',
-    location_use: ''
+    location_use: '',
+    ticket_link : '',
+    host: userId,
   });
 
   const handleSubmit = async (e) => {
@@ -340,6 +342,19 @@ export default function CreateTicketPage() {
                     ))}
                 </select>
                 </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="location_use" className="form-label d-flex align-items-center gap-1">
+                  <Link2 className="me-1" size={18} /> Ticket Link URL
+                </label>
+                <input
+                  type="text"
+                  name="ticket_link"
+                  value={form.ticket_link}
+                  onChange={handleChange}
+                  className="form-control input-outline-dark"
+                />
               </div>
 
               {/* detail */}

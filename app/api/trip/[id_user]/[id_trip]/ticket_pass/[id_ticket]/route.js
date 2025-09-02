@@ -15,13 +15,16 @@ export async function GET(req, { params }) {
     return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
   }
 
-  const ticket_item = trip.ticket_pass.id(id_ticket);
+  const trips = await Trip.find({}, 'ticket_pass');
+      const ticket_item = trips
+        .flatMap(trip => trip.ticket_pass)
+        .filter(ticket => ticket._id == id_ticket);
 
   if (!ticket_item) {
     return NextResponse.json({ message: 'Ticket not found' }, { status: 404 });
   }
 
-  return NextResponse.json(ticket_item, { status: 200 });
+  return NextResponse.json(ticket_item[0], { status: 200 });
 }
 
 

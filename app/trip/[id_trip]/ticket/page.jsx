@@ -91,7 +91,7 @@ export default function TicketPage() {
           onClick={() => setMode('public')}
           className={`btn input-outline-dark d-flex align-items-center ${mode == 'public' && 'active'}`}
         >
-          ทั้งหมด
+          สาธารณะ
         </button>
       </div>
       {/* List */}

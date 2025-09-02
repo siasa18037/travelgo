@@ -160,3 +160,6 @@ body {
   cursor: default !important;
 }
 
+.richtexteditor img {
+  width: 80%;
+}
