@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import Loading from '@/components/Loading';
 import Link from "next/link";
-import {Clock2,LocateFixed,SquarePen ,Route ,MapPin, Wallet, Hamburger, Hotel, Bus, CarFront, TrainFront, Plane, Footprints, Bike ,ListChecks ,Ticket,CalendarCheck,CalendarCheck2,NotebookPen,Luggage,BookKey,Moon,TicketsPlane,KeyRound} from 'lucide-react'
+import {Clock2,LocateFixed,SquarePen ,Route ,MapPin, WalletMinimal, Hamburger, Hotel, Bus, CarFront, TrainFront, Plane, Footprints, Bike ,ListChecks ,Ticket,CalendarCheck,CalendarCheck2,NotebookPen,Luggage,BookKey,Moon,TicketsPlane,KeyRound} from 'lucide-react'
 import './planItem.css'
 import StatusPlan from '@/components/StatusPlan';
 import { getLocalTimeString, getLocalToThaiDate ,getDurationString } from '@/utils/dateLocal'
@@ -178,7 +178,6 @@ export default function PlanItem() {
             </div>
           </div>
       </div>
-
       {/* Data */}
       <div className="row gap-3 flex-column flex-md-row">
           {/* left */}
@@ -222,7 +221,7 @@ export default function PlanItem() {
               )}
 
               {/* Booking != 'transport'  */}
-              { plan.type != 'transport' && (
+              { plan.type != 'transport' && plan.data?.booking_name && (
                 <div  className='input-outline-dark mb-2'>
                   <div className="d-flex gap-2 align-items-center mb-1">
                     <CalendarCheck size={18} />
@@ -274,8 +273,9 @@ export default function PlanItem() {
                   )}
                 </div>
               )}
+              
               {/* Booking == 'transport'  */}
-              { plan.type == 'transport' && (
+              { plan.type == 'transport' && plan.data?.booking_name && (
                 <div  className='input-outline-dark mb-2'>
                   <div className="d-flex gap-2 align-items-center mb-1">
                     <CalendarCheck size={18} />
@@ -363,7 +363,6 @@ export default function PlanItem() {
                 </div>
               )}
 
-
               {/* detail */}
               <div  className='mb-2'>
                 {/* <label className="form-label d-flex align-items-center">
@@ -387,41 +386,78 @@ export default function PlanItem() {
 
               {/* ticket */}
               {plan.Tiket_pass.length != 0 && (
-              <div className="mb-2">
-                <label className="form-label d-flex align-items-center">
-                  <Ticket size={18} className="me-1" /> My Ticket
-                </label>
-                <div className="row g-2">
-                  {plan.Tiket_pass.map((ticketId, idx) => {
-                    const ticket = allTictek.find(t => String(t._id) == String(ticketId));
-                    if (!ticket) return null;
-                    return (
-                      <div
-                        key={idx}
-                        className="col-6 col-md-4 col-lg-3 position-relative"
-                        onClick={() => router.push(`/trip/${id_trip}/ticket/${ticket._id}`)}
-                      >
-                        <img
-                          src={ticket?.img}
-                          alt="ticket"
-                          className="img-fluid rounded shadow-sm"
-                          style={{ cursor: "pointer", objectFit: "cover", height: "120px", width: "100%" }}
-                        />
-                      </div>
-                    );
-                  })}
+                <div className="mb-2">
+                  <label className="form-label d-flex align-items-center">
+                    <Ticket size={18} className="me-1" /> My Ticket
+                  </label>
+                  <div className="row g-2">
+                    {plan.Tiket_pass.map((ticketId, idx) => {
+                      const ticket = allTictek.find(t => String(t._id) === String(ticketId));
+                      if (!ticket) return null;
+
+                      // ✅ เงื่อนไขตรวจสอบ
+                      if (
+                        ticket.type !== "public" &&
+                        ticket.type !== "private" &&
+                        String(ticket.type) !== String(userId)
+                      ) {
+                        return null;
+                      }
+
+                      return (
+                        <div
+                          key={idx}
+                          className="col-6 col-md-4 col-lg-3 position-relative"
+                          onClick={() => router.push(`/trip/${id_trip}/ticket/${ticket._id}`)}
+                        >
+                          <img
+                            src={ticket?.img}
+                            alt="ticket"
+                            className="img-fluid rounded shadow-sm"
+                            style={{
+                              cursor: "pointer",
+                              objectFit: "cover",
+                              height: "120px",
+                              width: "100%",
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
               )}
 
           </div>
           {/* right */}
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
               {/* map */}
-              {/* <MapMultiMarker 
+              <MapMultiMarker 
                 locations={locationlist} 
                 mode={plan.type == 'transport' ? 'navigation' : 'markers'} 
-              /> */}
+              />
+
+              <div className="my-3">
+                <h4 className="d-flex align-items-center mb-2">
+                  <WalletMinimal size={24} className="me-2" />
+                  Wallet
+                </h4>
+                <div className="d-flex gap-2">
+                  <Link
+                    className="btn custom-dark-hover flex-fill d-flex align-items-center justify-content-center p-2"
+                    href={`/trip/${id_trip}/wallet/plan/${id_plan}`}
+                  >
+                    My plan wallet
+                  </Link>
+                  <Link
+                    className="btn input-outline-dark flex-fill d-flex align-items-center justify-content-center p-2"
+                    href={`/trip/${id_trip}/wallet/plan/${id_plan}`}
+                  >
+                    This plan wallet
+                  </Link>
+                </div>
+              </div>
+              
               {/* Image  */}
               <ImageList data={plan.image} id_user={userId} id_trip={id_trip} id_plan={id_plan}/>
           </div>

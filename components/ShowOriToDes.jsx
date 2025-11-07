@@ -4,7 +4,7 @@ import { getDurationString, getLocalTimeString } from '@/utils/dateLocal';
 import MapShare from '@/components/MapShare'
 import axios from "axios";
 
-export default function ShowOriToDes({data , start ,end}) {
+export default function ShowOriToDes({data , start ,end , btn=false}) {
     const [mapShareBox , setMapShareBox] = useState(false); 
     const [mapSharedata,setMapSharedata] = useState();
     const [mapShareType,setMapShareType] = useState('location')
@@ -84,17 +84,17 @@ export default function ShowOriToDes({data , start ,end}) {
                 location: data.destination
             });
         } 
-        // else if (mode === '') {
-        //     setMapShareType('navigation')
-        //     setMapSharedata({
-        //         name: item.name,
-        //         start: item.start,
-        //         end: item.end,
-        //         transport_type: item.data.transport_type,
-        //         origin: item.data.origin,
-        //         destination: item.data.destination
-        //     });
-        // }
+        else if (mode === 'navigation') {
+            setMapShareType('navigation')
+            setMapSharedata({
+                name: 'rfrf',
+                start: start,
+                end: end,
+                transport_type: data.transport_type,
+                origin: data.origin,
+                destination: data.destination
+            });
+        }
         setMapShareBox(true);
     };
 
@@ -143,6 +143,12 @@ export default function ShowOriToDes({data , start ,end}) {
                     </h5>
                 </li>
             </ol>
+            <button
+                className="btn input-outline-dark mb-1"
+                onClick={() => ShowMapShare('navigation')}
+                >
+                นำทาง
+            </button>
         </div>
         {/* mapShareBox */}
         {mapShareBox && (

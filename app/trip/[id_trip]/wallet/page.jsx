@@ -240,58 +240,81 @@ export default function WalletPage() {
           </button>
         </div>
         <div className="head border-bottom d-flex flex-wrap align-items-center gap-2 py-2">
-            <div className="button-filter d-flex gap-2 flex-wrap">
-              {['ทั้งหมด', 'เฉพาะฉัน', 'หนี้ที่ฉันยังไม่คืน', 'ใช้จ่ายของฉัน', 'ลูกหนี้ของฉัน' , 'ลูกหนี้ของฉันที่ยังไม่คืน'].map((label) => (
+          {/* ✅ เปลี่ยน flex-wrap เป็น nowrap และเพิ่ม overflow-x */}
+          <div
+            className="button-filter d-flex gap-2 py-1"
+            style={{
+              overflowX: 'auto',
+              whiteSpace: 'nowrap',
+              flexWrap: 'nowrap',
+              scrollbarWidth: 'thin',
+              paddingBottom: '4px',
+            }}
+          >
+            {['ทั้งหมด', 'เฉพาะฉัน', 'หนี้ที่ฉันยังไม่คืน', 'ใช้จ่ายของฉัน', 'ลูกหนี้ของฉัน', 'ลูกหนี้ของฉันที่ยังไม่คืน'].map(
+              (label) => (
                 <button
                   key={label}
-                  className={`btn btn-sm input-outline-dark ${filterType === label ? 'active' : ''}`}
+                  className={`btn btn-sm input-outline-dark ${
+                    filterType === label ? 'active' : ''
+                  }`}
                   onClick={() => {
                     setFilterType(label);
-                    setChooseList([]); 
+                    setChooseList([]);
                   }}
+                  style={{ flexShrink: 0 }} // ✅ ป้องกันปุ่มย่อ
                 >
                   {label}
                 </button>
-              ))}
+              )
+            )}
+          </div>
+
+          <div className="seach-box ms-auto d-flex align-items-center gap-2 flex-shrink-0 mt-md-0">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control form-control-sm input-outline-dark"
+                placeholder="ค้นหา..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ minWidth: '150px' }}
+              />
+              <span className="input-group-text input-outline-dark">
+                <Search size={16} />
+              </span>
             </div>
-            <div className="seach-box ms-auto d-flex align-items-center gap-2">
-              <div className="input-group" >
-                <input
-                  type="text"
-                  className="form-control form-control-sm input-outline-dark"
-                  placeholder="ค้นหา..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ minWidth: '150px' }}
-                />
-                <span className="input-group-text input-outline-dark"><Search size={16}/></span>
-              </div>
-              {editmode ? (
-                  <>
-                  <button
-                      className="btn btn-sm btn-danger d-flex align-items-center"
-                      onClick={handleCancelEditMode}
-                  >
-                      <X size={18}/>
-                  </button>
-                  <button 
-                    className="btn btn-sm btn-success d-flex align-items-center"
-                    onClick={() => updateLaodIsPaid(chooseList)}
-                  >
-                      <CheckCircle size={18} />
-                      <label className='ms-2 ' style={{minWidth:'90px'}}>คืนเงินหลายชุด</label>
-                  </button>
-                  </>
-                ) : (
-                  <button
-                      className="btn btn-sm custom-dark-hover d-flex align-items-center"
-                      onClick={() => setEditmode(true)}
-                    >
-                      <CheckCircle size={18} />
-                      <label className='ms-2 ' style={{minWidth:'120px'}}>คืนเงินเเบบหลายชุด</label>
-                  </button>
-                )}
-            </div>
+
+            {editmode ? (
+              <>
+                <button
+                  className="btn btn-sm btn-danger d-flex align-items-center"
+                  onClick={handleCancelEditMode}
+                >
+                  <X size={18} />
+                </button>
+                <button
+                  className="btn btn-sm btn-success d-flex align-items-center"
+                  onClick={() => updateLaodIsPaid(chooseList)}
+                >
+                  <CheckCircle size={18} />
+                  <label className="ms-2" style={{ minWidth: '90px' }}>
+                    คืนเงินหลายชุด
+                  </label>
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn btn-sm custom-dark-hover d-flex align-items-center"
+                onClick={() => setEditmode(true)}
+              >
+                <CheckCircle size={18} />
+                <label className="ms-2" style={{ minWidth: '120px' }}>
+                  คืนเงินแบบหลายชุด
+                </label>
+              </button>
+            )}
+          </div>
         </div>
         <div className="table-responsive">
           <table className="table table-borderless table-custom table-hover">

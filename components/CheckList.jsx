@@ -35,11 +35,19 @@ export default function CheckList({mode, id_user, id_trip, id_plan }) {
 
   const toggleStatus = async (id, currentStatus) => {
     try {
+      const newStatus = currentStatus === 'pending' ? 'done' : 'pending';
+
+      // ส่งไปอัปเดตใน backend
       await axios.put(`/api/trip/${id_user}/${id_trip}/plan/${id_plan}/checklist`, {
         _id: id,
-        status: currentStatus === 'pending' ? 'done' : 'pending',
+        status: newStatus,
       });
-      fetchChecklist();
+
+      setChecklist((prevChecklist) =>
+        prevChecklist.map((item) =>
+          item._id === id ? { ...item, status: newStatus } : item
+        )
+      );
     } catch (err) {
       console.error('Error updating status', err);
     }
@@ -55,7 +63,6 @@ export default function CheckList({mode, id_user, id_trip, id_plan }) {
       console.error('Error deleting item', err);
     }
   };
-
 
   return (
     <div className="CheckList">
@@ -118,7 +125,7 @@ export default function CheckList({mode, id_user, id_trip, id_plan }) {
                 )}
             </li>
         ))}
-        </ul>
+      </ul>
 
     </div>
   );

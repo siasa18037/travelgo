@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { CalendarDays, Users ,PlusCircle} from 'lucide-react';
+import { CalendarDays, Users, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Loading from '@/components/Loading';
 import { logoutUser } from "@/utils/logout";
@@ -10,7 +10,8 @@ import './dashboard.css'
 export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [triplist, setTriplist] = useState([]);
-  const [loadingTrips, setLoadingTrips] = useState(true); // <-- เพิ่มตัวนี้
+  const [loadingTrips, setLoadingTrips] = useState(true);
+  const [autoRedirect, setAutoRedirect] = useState(true); // ✅ ตัวเปิด/ปิด auto redirect
   const router = useRouter();
 
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function DashboardPage() {
       .then(data => {
         if (data.ok) {
           setUser(data.user);
-          setLoadingTrips(true); // <-- เริ่มโหลด
+          setLoadingTrips(true);
           fetch(`/api/trip/${data.user.userId}`)
             .then(res => res.json())
             .then(trip_list => {
@@ -28,13 +29,20 @@ export default function DashboardPage() {
               } else {
                 logoutUser();
               }
-              setLoadingTrips(false); // <-- เสร็จสิ้น
+              setLoadingTrips(false);
             });
         } else {
           logoutUser();
         }
       });
   }, []);
+
+  // ✅ Redirect ถ้ามี trip เดียวและเปิด autoRedirect
+  useEffect(() => {
+    if (!loadingTrips && autoRedirect && triplist.length === 1) {
+      router.push(`/trip/${triplist[0]._id}`);
+    }
+  }, [loadingTrips, triplist, autoRedirect, router]);
 
   if (!user || loadingTrips) return <Loading />;
 
@@ -47,49 +55,49 @@ export default function DashboardPage() {
     });
   };
 
-
   const getTripStatusMessage = (status) => {
-    if(status == 'not_started'){
-      return "เร็วๆ นี้"
-    }else if(status == 'in_progress'){
-      return "กำลังเดินทาง"
-    }else if(status == 'completed'){
-      return "จบแล้ว"
-    }else if(status == 'cancelled'){
-      return "ยกเลิก"
-    }
+    if(status === 'not_started') return "เร็วๆ นี้";
+    if(status === 'in_progress') return "กำลังเดินทาง";
+    if(status === 'completed') return "จบแล้ว";
+    if(status === 'cancelled') return "ยกเลิก";
   };
 
   const getTripStatusStyle = (status) => {
-    if(status == 'not_started'){
-      return "bg-warning-subtle text-warning-emphasis border border-warning"
-    }else if(status == 'in_progress'){
-      return "bg-success-subtle text-success-emphasis border border-success"
-    }else if(status == 'completed'){
-      return 'bg-secondary-subtle text-secondary-emphasis border border-secondary'
-    }else if(status == 'cancelled'){
-      return 'bg-danger-subtle text-danger-emphasis border border-danger'
-    }
+    if(status === 'not_started') return "bg-warning-subtle text-warning-emphasis border border-warning";
+    if(status === 'in_progress') return "bg-success-subtle text-success-emphasis border border-success";
+    if(status === 'completed') return "bg-secondary-subtle text-secondary-emphasis border border-secondary";
+    if(status === 'cancelled') return "bg-danger-subtle text-danger-emphasis border border-danger";
   };
 
   return (
     <main>
-        <div className="container py-4">
-          <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-              <h2 className="fw-bold mb-1">สวัสดี {user?.name} 🥰</h2>
-              <p className="text-muted mb-0">พร้อมจะสร้างความทรงจำใหม่แล้วหรือยัง?</p>
-            </div>
+      <div className="container py-4">
+        <div className="d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <h2 className="fw-bold mb-1">สวัสดี {user?.name} 🥰</h2>
+            <p className="text-muted mb-0">พร้อมจะสร้างความทรงจำใหม่ยัง?</p>
+          </div>
+          <div className="d-flex gap-2 mt-3 mt-md-0">
+            {/* ✅ ปุ่มเปิด/ปิด autoRedirect */}
+            {/* <button
+              onClick={() => setAutoRedirect(!autoRedirect)}
+              className={`btn ${autoRedirect ? 'btn-outline-danger' : 'btn-outline-success'}`}
+            >
+              {autoRedirect ? 'ปิด Auto Redirect' : 'เปิด Auto Redirect'}
+            </button> */}
+
             <button
               onClick={() => router.push('/trip/create')}
-              className="btn custom-dark-hover d-flex align-items-center mt-3 mt-md-0"
+              className="btn custom-dark-hover d-flex align-items-center"
             >
               <PlusCircle className="me-2" size={18} />
               สร้างทริปใหม่
             </button>
           </div>
         </div>
-        <div className="container py-2">
+      </div>
+
+      <div className="container py-2">
         {Array.isArray(triplist) && triplist.length > 0 ? (
           <div className="row g-4">
             {triplist.map((trip) => (
@@ -133,6 +141,5 @@ export default function DashboardPage() {
         )}
       </div>
     </main>
-    
   );
 }
