@@ -15,15 +15,16 @@ import Richtexteditor from '@/components/Richtexteditor'
 import Link from "next/link";
 import { timezones } from '@/lib/timezone';
 import { utcToZonedTime, format } from 'date-fns-tz'
+import { useTrip } from '@/components/TripContext';
 
 
 export default function EditTrip() {
+  const { userType, userId, id_trip } = useTrip();
   const router = useRouter();
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState('10:00');
   const [endDate, setEndDate] = useState(new Date());
   const [endTime, setEndTime] = useState('18:00');
-  const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [loadingTrips, setLoadingTrips] = useState(true); // <-- เพิ่มตัวนี้
@@ -40,44 +41,37 @@ export default function EditTrip() {
   });
   const [startTimezone, setStartTimezone] = useState('Asia/Bangkok');
   const [endTimezone, setEndTimezone] = useState('Asia/Bangkok');
-  const params = useParams();
-  const id_trip = params.id_trip;
 
   useEffect(() => {
-    fetch('/api/auth/check')
+    if (userType !== 'admin') {
+      showErrorToast('คุณไม่มีสิทธิ์แก้ไขทริปนี้');
+      router.push(`/trip/${id_trip}`);
+      return;
+    }
+
+    fetch(`/api/trip/${userId}/${id_trip}`)
       .then(res => res.json())
-      .then(data => {
-        if (data.ok) {
-          setUserId(data.user.userId);
+      .then(trip => {
+        if (!trip.message) {
+          setForm(trip);
 
-          fetch(`/api/trip/${data.user.userId}/${id_trip}`)
-            .then(res => res.json())
-            .then(trip => {
-              if (!trip.message) {
-                setForm(trip);
+          const start = new Date(trip.start_date?.datetime || trip.start_date);
+          const end = new Date(trip.end_date?.datetime || trip.end_date);
+          setStartTimezone(trip.start_date?.timezone || 'Asia/Bangkok');
+          setEndTimezone(trip.end_date?.timezone || 'Asia/Bangkok');
 
-                const start = new Date(trip.start_date?.datetime || trip.start_date);
-                const end = new Date(trip.end_date?.datetime || trip.end_date);
-                setStartTimezone(trip.start_date?.timezone || 'Asia/Bangkok');
-                setEndTimezone(trip.end_date?.timezone || 'Asia/Bangkok');
-
-
-                setStartDate(start);
-                setStartTime(start.toTimeString().slice(0, 5)); // "HH:MM"
-
-                setEndDate(end);
-                setEndTime(end.toTimeString().slice(0, 5));
-              } else {
-                router.push(`/dashboard`);
-                return
-              }
-              setLoadingTrips(false);
-            });
+          setStartDate(start);
+          setStartTime(start.toTimeString().slice(0, 5));
+          setEndDate(end);
+          setEndTime(end.toTimeString().slice(0, 5));
         } else {
-          logoutUser();
+          router.push(`/dashboard`);
+          return;
         }
+        setLoadingTrips(false);
       });
   }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -253,7 +247,8 @@ export default function EditTrip() {
     
   // console.log(form)
 
-  if (!userId || loadingTrips) return <Loading />;
+  if (loadingTrips) return <Loading />;
+
 
   return (
     <main className="Createtrip">

@@ -10,13 +10,27 @@ export async function GET(req, { params }) {
   const { id_user, id_trip } = await params;
   await connectDB();
 
+  const url = new URL(req.url);
+  const mode = url.searchParams.get('mode'); // ดึงค่า ?mode=some
+
   const trip = await Trip.findById(id_trip);
-  if (!trip) return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+  if (!trip) {
+    return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+  }
 
   const userExists = trip.user.some(u => u.id_user === id_user);
-  if (!userExists) return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+  if (!userExists) {
+    return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+  }
 
-  return NextResponse.json(trip, { status: 200 });
+  // ✅ ถ้ามี query ?mode=some → ลบ field plan ออกจาก object
+  let result = trip.toObject();
+  if (mode === 'some') {
+    delete result.plan;
+    delete result.wallet_transaction;
+  }
+
+  return NextResponse.json(result, { status: 200 });
 }
 
 export async function PUT(req, { params }) {
