@@ -42,7 +42,8 @@ export async function middleware(request) {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://192.168.1.180:3000',
-      'https://your-production-domain.com'
+      'https://your-production-domain.com',
+      'https://travelgo-rosy.vercel.app',
     ];
 
     // Allow all origins in development if ALLOW_ALL_ORIGINS=true
