@@ -14,7 +14,7 @@ import { getLocalDateString, getLocalTimeString , getLocalToThaiDate} from '@/ut
 import Richtexteditor from '@/components/Richtexteditor'
 import currencyCodes from 'currency-codes';
 import Link from 'next/link';
-import './TicketItem.css'
+import './ticketItem.css'
 
 export default function TicketItemPage() {
     const router = useRouter();
