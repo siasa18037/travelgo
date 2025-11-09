@@ -134,6 +134,18 @@ const WalletTransactionSchema = new Schema({
   note: { type: String }
 }, { timestamps: true });
 
+const FileLinkSchema = new Schema({
+  host : { type: Schema.Types.ObjectId, ref: 'User' },
+  name : String,
+  url_type: { 
+    type: String, 
+    enum: ['file','link','image'], 
+    required: true 
+  },
+  url : String,
+  note : String,
+}, { timestamps: true });
+
 // Trip schema (Main)
 const TripSchema = new Schema({
   status: {
@@ -153,6 +165,9 @@ const TripSchema = new Schema({
   profile_image:{ type: String },
   image: [{ type: String }],
   country :[{ type: String }],
+  document : [FileLinkSchema],
+  link : [FileLinkSchema],
+  immigration : [FileLinkSchema]
 }, { timestamps: true });
 
 
