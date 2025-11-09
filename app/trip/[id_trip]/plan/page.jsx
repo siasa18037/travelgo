@@ -246,7 +246,7 @@ export default function Plan() {
       
       <div className="row gap-3 flex-column flex-md-row">
           <div className="col">
-              <PlanList plan_list={planList} trip_status={statusTrip} fillter={searchInput}/>
+              <PlanList plan_list={planList} trip_status={statusTrip} fillter={searchInput} user_type={userType}/>
           </div>
           <div className="col-md-4 mb-4 mb-md-0 d-flex flex-column">
               <div className="right-box" >

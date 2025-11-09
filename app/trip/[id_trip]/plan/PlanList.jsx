@@ -10,7 +10,7 @@ import { MapPin, Wallet, Hamburger, Hotel, Bus, CarFront, TrainFront, Plane, Foo
 import { getLocalTimeString, getLocalToThaiDate } from '@/utils/dateLocal'
 import MapShare from '@/components/MapShare'
 
-export default function PlanList({ plan_list, trip_status, fillter = '' }) {
+export default function PlanList({ plan_list, trip_status, fillter = '' , user_type}) {
   const router = useRouter();
   const { userType, userId, id_trip, statusTrip } = useTrip();
   const [mapSharedata, setMapSharedata] = useState();
@@ -126,8 +126,6 @@ export default function PlanList({ plan_list, trip_status, fillter = '' }) {
     setMapShareBox(true);
   };
 
-  // ... ส่วนของ JSX return ยังคงเหมือนเดิม ไม่มีการเปลี่ยนแปลง ...
-  // ... (คัดลอกส่วน JSX ของคุณมาวางต่อที่นี่) ...
   return (
    <>
     <section className="bsb-timeline-2">
@@ -151,7 +149,7 @@ export default function PlanList({ plan_list, trip_status, fillter = '' }) {
                                 <div className="card border-0">
                                     <div className="d-flex align-items-center gap-4">
                                         <h4 className="mb-0">Start</h4>
-                                        {trip_status === 'not_started' && (
+                                        {trip_status === 'not_started' && user_type == 'admin' && (
                                             <button className="btn btn-success" onClick={()=>handleStartTrip()} disabled={isLoading}>
                                                 {isLoading ? (
                                                     <>
