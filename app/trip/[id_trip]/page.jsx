@@ -169,7 +169,7 @@ export default function TripPage() {
                   { label: 'Plan', icon: <Map size={24} />, path: `/trip/${id_trip}/plan` },
                   { label: 'Wallet', icon: <Wallet size={24} />, path: `/trip/${id_trip}/wallet` },
                   { label: 'ตั๋ว/Pass', icon: <Ticket size={24} />, path: `/trip/${id_trip}/ticket` },
-                  { label: 'Currency', icon: <CircleDollarSign size={24} />, path: `/trip/${id_trip}/currency` },
+                  { label: 'Currency', icon: <CircleDollarSign size={24} />, path: `https://www.superrich1965.com/en/exchange-rate` },
                   { label: 'เอกสาร', icon: <FolderOpen size={24} />, path: `/trip/${id_trip}/files` },
                   { label: 'Link', icon: <Link size={24} />, path: `/trip/${id_trip}/link` },
                   { label: 'Immigration' , icon: <ShieldBan size={24}/>, path: `/trip/${id_trip}/immigration` },
