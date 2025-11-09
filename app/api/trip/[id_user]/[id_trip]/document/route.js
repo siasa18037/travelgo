@@ -23,7 +23,7 @@ export async function GET(req, { params }) {
 
 // ✅ POST: เพิ่ม document ใหม่เข้า trip.document
 export async function POST(req, { params }) {
-  const { id_user, id_trip } = params;
+  const { id_user, id_trip } = await params;
   await connectDB();
 
   const body = await req.json();
@@ -64,7 +64,7 @@ export async function POST(req, { params }) {
 
 // ✅ PUT: แก้ไข document ที่มีอยู่ใน trip.document
 export async function PUT(req, { params }) {
-  const { id_user, id_trip } = params;
+  const { id_user, id_trip } = await params;
   await connectDB();
 
   const body = await req.json();
@@ -103,4 +103,43 @@ export async function PUT(req, { params }) {
     { message: 'Document updated successfully', document: doc },
     { status: 200 }
   );
+}
+
+// ✅ DELETE: ลบเอกสาร
+export async function DELETE(req, { params }) {
+  const { id_user, id_trip } = await params;
+  await connectDB();
+
+  const body = await req.json();
+  const { doc_id } = body;
+
+  if (!doc_id) {
+    return NextResponse.json({ message: 'doc_id is required' }, { status: 400 });
+  }
+
+  const trip = await Trip.findById(id_trip);
+  if (!trip) {
+    return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+  }
+
+  // ✅ ตรวจสอบว่า user อยู่ใน trip
+  const user = trip.user.find(u => u.id_user === id_user);
+  if (!user) {
+    return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+  }
+
+  const doc = trip.document.id(doc_id);
+  if (!doc) {
+    return NextResponse.json({ message: 'Document not found' }, { status: 404 });
+  }
+
+  // ✅ ต้องเป็น host เท่านั้นถึงลบได้
+  if (doc.host?.toString() !== id_user.toString()) {
+    return NextResponse.json({ message: 'You are not allowed to delete this document (not host)' }, { status: 403 });
+  }
+
+  trip.document = trip.document.filter(d => d._id.toString() !== doc_id);
+  await trip.save();
+
+  return NextResponse.json({ message: 'Document deleted successfully' }, { status: 200 });
 }

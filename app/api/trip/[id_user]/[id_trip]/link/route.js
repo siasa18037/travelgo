@@ -62,11 +62,11 @@ export async function POST(req, { params }) {
 
 // ✅ PUT: อัปเดต link เดิม
 export async function PUT(req, { params }) {
-  const { id_user, id_trip } = params;
+  const { id_user, id_trip } = await params;
   await connectDB();
 
   const body = await req.json();
-  const { link_id, name, url_type, url, note } = await body;
+  const { link_id, name, url_type, url, note } = body;
 
   if (!link_id) {
     return NextResponse.json({ message: 'link_id is required' }, { status: 400 });
@@ -98,4 +98,44 @@ export async function PUT(req, { params }) {
     { message: 'Link updated successfully', link: linkDoc },
     { status: 200 }
   );
+}
+
+
+// ✅ DELETE: ลบ link
+export async function DELETE(req, { params }) {
+  const { id_user, id_trip } = await params;
+  await connectDB();
+
+  const body = await req.json();
+  const { link_id } = body;
+
+  if (!link_id) {
+    return NextResponse.json({ message: 'link_id is required' }, { status: 400 });
+  }
+
+  const trip = await Trip.findById(id_trip);
+  if (!trip) {
+    return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+  }
+
+  // ✅ ตรวจสอบว่า user อยู่ใน trip
+  const user = trip.user.find(u => u.id_user === id_user);
+  if (!user) {
+    return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+  }
+
+  const link = trip.link.id(link_id);
+  if (!link) {
+    return NextResponse.json({ message: 'Link not found' }, { status: 404 });
+  }
+
+  // ✅ ต้องเป็น host เท่านั้นถึงลบได้
+  if (link.host?.toString() !== id_user.toString()) {
+    return NextResponse.json({ message: 'You are not allowed to delete this link (not host)' }, { status: 403 });
+  }
+
+  trip.link = trip.link.filter(l => l._id.toString() !== link_id);
+  await trip.save();
+
+  return NextResponse.json({ message: 'Link deleted successfully' }, { status: 200 });
 }

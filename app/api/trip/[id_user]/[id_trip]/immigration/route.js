@@ -99,3 +99,43 @@ export async function PUT(req, { params }) {
     { status: 200 }
   );
 }
+
+
+// ✅ DELETE: ลบ immigration
+export async function DELETE(req, { params }) {
+  const { id_user, id_trip } = await params;
+  await connectDB();
+
+  const body = await req.json();
+  const { imm_id } = body;
+
+  if (!imm_id) {
+    return NextResponse.json({ message: 'imm_id is required' }, { status: 400 });
+  }
+
+  const trip = await Trip.findById(id_trip);
+  if (!trip) {
+    return NextResponse.json({ message: 'Trip not found' }, { status: 404 });
+  }
+
+  // ✅ ตรวจสอบว่า user อยู่ใน trip
+  const user = trip.user.find(u => u.id_user === id_user);
+  if (!user) {
+    return NextResponse.json({ message: 'User not in this trip' }, { status: 403 });
+  }
+
+  const imm = trip.immigration.id(imm_id);
+  if (!imm) {
+    return NextResponse.json({ message: 'Immigration document not found' }, { status: 404 });
+  }
+
+  // ✅ ต้องเป็น host เท่านั้นถึงลบได้
+  if (imm.host?.toString() !== id_user.toString()) {
+    return NextResponse.json({ message: 'You are not allowed to delete this immigration (not host)' }, { status: 403 });
+  }
+
+  trip.immigration = trip.immigration.filter(i => i._id.toString() !== imm_id);
+  await trip.save();
+
+  return NextResponse.json({ message: 'Immigration deleted successfully' }, { status: 200 });
+}
