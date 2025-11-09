@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Mail, Phone, FileText ,User,Trash,QrCode} from 'lucide-react';
-import { showSuccessToast, showErrorToast } from "@/lib/swal";
+import { Mail, Phone, FileText ,User,Trash,QrCode,KeySquare , CircleCheck} from 'lucide-react';
+import { showSuccessToast, showErrorToast , confirmDelete} from "@/lib/swal";
 import UploadButton from '@/components/UploadButton'; 
 import './profile.css'
 import { logoutUser } from "@/utils/logout"; 
 import Loading from "@/components/Loading"
+import { startRegistration } from "@simplewebauthn/browser";
 
 
 export default function Profile() {
@@ -23,6 +24,50 @@ export default function Profile() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [hasPasskey, setHasPasskey] = useState(false);
+  const [isCheckingPasskey, setIsCheckingPasskey] = useState(true);
+  const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
+
+
+  useEffect(() => {
+    if (!user) return;
+    checkPasskeyStatus(user.userId);
+  }, [user]);
+
+  async function checkPasskeyStatus(userId) {
+    try {
+      const res = await fetch(`/api/auth/passkey/check/${userId}`);
+      const data = await res.json();
+      if (data.ok && data.hasPasskey) setHasPasskey(true);
+      else setHasPasskey(false);
+    } catch (err) {
+      console.error('Error checking passkey:', err);
+    } finally {
+      setIsCheckingPasskey(false);
+    }
+  }
+
+  async function handleDeletePasskey() {
+    const result = await confirmDelete();
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/auth/passkey/delete/${user.userId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        showSuccessToast("ลบ Passkey สำเร็จ");
+        setHasPasskey(false);
+      } else {
+        showErrorToast(data.message || "ลบ Passkey ไม่สำเร็จ");
+      }
+    } catch (err) {
+      console.error(err);
+      showErrorToast("เกิดข้อผิดพลาดขณะลบ Passkey");
+    }
+  }
 
   useEffect(() => {
     // ตรวจสอบ session ว่าล็อกอินอยู่หรือไม่
@@ -144,6 +189,50 @@ export default function Profile() {
       setIsLoading_ChangePassword(false);
     }
   };
+
+  async function handleRegisterPasskey() {
+    try {
+      // ขอ challenge จาก backend
+      const res = await fetch("/api/auth/passkey/register/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email }),
+      });
+      const options = await res.json();
+
+      // 🧠 ตรวจสอบก่อนเรียก startRegistration
+      if (!options || !options.challenge) {
+        console.error("❌ Invalid registration options:", options);
+        showErrorToast("ข้อมูล passkey จากเซิร์ฟเวอร์ไม่ถูกต้อง");
+        return;
+      }
+
+      // ให้ browser สร้าง passkey
+      const attResp = await startRegistration(options);
+
+      // ส่งกลับไป verify กับ server
+      const verifyRes = await fetch("/api/auth/passkey/register/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(attResp),
+      });
+
+      if (verifyRes.ok) {
+        showSuccessToast("ลงทะเบียน Passkey สำเร็จ 🎉");
+        await checkPasskeyStatus(user.userId);
+      } else {
+        showErrorToast("ไม่สามารถลงทะเบียน Passkey ได้");
+      }
+
+    }
+     catch (err) {
+      console.error(err);
+      showErrorToast("เกิดข้อผิดพลาดระหว่างสร้าง Passkey");
+    } finally {
+      setIsRegisteringPasskey(false);
+    }
+  }
+
 
   if (!user) return <Loading />;
 
@@ -358,6 +447,49 @@ export default function Profile() {
                 )}
                 </button>
               </div>
+
+              {/* Register Passkey */}
+              <div className="mb-3 border-top pt-5">
+                <h5 className="mb-3">ลงทะเบียน Passkey</h5>
+                <p className="text-muted">
+                  ใช้เพื่อเข้าสู่ระบบโดยไม่ต้องใช้รหัสผ่าน (Touch ID / Face ID / Windows Hello)
+                </p>
+
+                {isCheckingPasskey ? (
+                  <div className="text-secondary">⏳ กำลังตรวจสอบสถานะ...</div>
+                ) : hasPasskey ? (
+                  <div className="alert alert-success d-flex align-items-center justify-content-between">
+                    <span><CircleCheck size={18}/> คุณได้ลงทะเบียน Passkey แล้ว</span>
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger btn-sm ms-2"
+                      onClick={handleDeletePasskey}
+                    >
+                      ลบ Passkey
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center p-2 gap-2"
+                    onClick={handleRegisterPasskey}
+                    disabled={isRegisteringPasskey}
+                  >
+                    {isRegisteringPasskey ? (
+                      <>
+                        <div className="spinner-border spinner-border-sm me-2" role="status" />
+                        กำลังลงทะเบียน...
+                      </>
+                    ) : (
+                      <>
+                        <KeySquare size={18}/> ลงทะเบียน Passkey
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+
+
             </form>
           </div>
         </div>

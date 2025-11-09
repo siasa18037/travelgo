@@ -1,11 +1,15 @@
 "use client";
 import React, { useState } from "react";
-import { Mail, KeyRound,User} from "lucide-react";
+import { Mail, KeyRound, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
 import './register.css';
 
+
 function RegisterPage() {
+
+  const domain = process.env.NEXT_PUBLIC_APP_ORIGIN || "http://localhost:3000";
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
@@ -13,6 +17,8 @@ function RegisterPage() {
     email: "",
     password: "",
   });
+
+  
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,26 +29,37 @@ function RegisterPage() {
     setIsLoading(true);
 
     try {
+      // ✅ 1. สมัครสมาชิก
       const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
-      console.log(data.message);
-
-      if (res.ok) {
-        showSuccessToast("สมัครสมาชิกสำเร็จ");
-        router.push("/login");
-      } else {
-        showErrorToast("เกิดข้อผิดพลาดในระบบ");
+      if (!res.ok) {
+        showErrorToast(data.message || "เกิดข้อผิดพลาดในระบบ");
+        return;
       }
+
+      // ✅ 2. สมัครเสร็จแล้ว → ล็อกอินอัตโนมัติ
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
+
+      if (loginRes) {
+        showSuccessToast("สมัครสมาชิกและเข้าสู่ระบบสำเร็จ");
+        window.location.href = "/register/passKeySetUp";
+      } else {
+        showErrorToast("สมัครสำเร็จ แต่ล็อกอินไม่สำเร็จ กรุณาลองอีกครั้ง");
+        router.push("/login");
+      }
+
     } catch (error) {
       console.error("Error:", error);
-      showErrorToast("เกิดข้อผิดพลาดขณะส่งข้อมูล");
+      showErrorToast("เกิดข้อผิดพลาดขณะสมัครสมาชิก");
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +71,8 @@ function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="name" className="form-label">
-            <User size={18} /> Name</label>
+            <User size={18} /> Name
+          </label>
           <input
             type="text"
             className="form-control input-outline-dark"
@@ -103,10 +121,7 @@ function RegisterPage() {
         >
           {isLoading ? (
             <>
-              <div
-                className="spinner-border spinner-border-sm me-2 text-dark"
-                role="status"
-              >
+              <div className="spinner-border spinner-border-sm me-2 text-dark" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
               กำลังสมัครสมาชิก...

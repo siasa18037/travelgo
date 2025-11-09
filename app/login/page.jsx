@@ -2,8 +2,9 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { showSuccessToast, showErrorToast } from "@/lib/swal";
-import { Mail , KeyRound} from "lucide-react";
+import { Mail , KeyRound ,KeySquare} from "lucide-react";
 import './Login.css'
+import { startAuthentication } from "@simplewebauthn/browser";
 
 function LoginPage() {
   const router = useRouter();
@@ -52,6 +53,42 @@ function LoginPage() {
       showErrorToast("เกิดข้อผิดพลาดในระบบ");
     }
   };
+
+
+async function handlePasskeyLogin() {
+  try {
+    const res = await fetch('/api/auth/passkey/login/start', { method: 'POST' });
+    const options = await res.json();
+
+    if (!options || !options.challenge) {
+      showErrorToast('ไม่สามารถเริ่มการยืนยันตัวตนด้วย Passkey ได้');
+      console.error('Invalid options:', options);
+      return;
+    }
+
+    // ✅ Browser จะเลือก passkey ที่ตรงกับ domain เอง
+    const authResp = await startAuthentication(options);
+
+    const verifyRes = await fetch('/api/auth/passkey/login/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(authResp),
+    });
+
+    const result = await verifyRes.json();
+    if (result.verified) {
+      showSuccessToast('เข้าสู่ระบบด้วย Passkey สำเร็จ 🎉');
+      window.location.href = '/dashboard';
+    } else {
+      showErrorToast(result.message || 'ไม่สามารถเข้าสู่ระบบได้');
+    }
+  } catch (err) {
+    console.error('Passkey login error:', err);
+    showErrorToast('เกิดข้อผิดพลาดระหว่างล็อกอินด้วย Passkey');
+  }
+}
+
+
 
   return (
     <div className="Login container mt-5" style={{ maxWidth: "500px" }}>
@@ -102,6 +139,13 @@ function LoginPage() {
           )}
         </button>
 
+          <button
+              type="button"
+              className="btn input-outline-dark w-100 mt-2"
+              onClick={handlePasskeyLogin}
+            >
+              <KeySquare size={18}/> Sign in with Passkey
+            </button>
 
 
       </form>
