@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null);
   const [triplist, setTriplist] = useState([]);
   const [loadingTrips, setLoadingTrips] = useState(true);
-  const [autoRedirect, setAutoRedirect] = useState(true); // ✅ ตัวเปิด/ปิด auto redirect
+  const [autoRedirect, setAutoRedirect] = useState(false); // ✅ ตัวเปิด/ปิด auto redirect
   const router = useRouter();
 
   useEffect(() => {
